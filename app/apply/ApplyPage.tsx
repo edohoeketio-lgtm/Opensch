@@ -299,8 +299,8 @@ function RadioGroup({
                     <label
                         key={opt.value}
                         className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 cursor-pointer ${value === opt.value
-                                ? "border-accent bg-accent/5"
-                                : "border-border hover:border-border-strong"
+                            ? "border-accent bg-accent/5"
+                            : "border-border hover:border-border-strong"
                             }`}
                     >
                         <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${value === opt.value ? "border-accent" : "border-border-strong"

@@ -48,8 +48,8 @@ function CategoryNav({ categories, activeCategory, setActiveCategory }: {
                 <button
                     onClick={() => setActiveCategory(null)}
                     className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${activeCategory === null
-                            ? "bg-ink text-white"
-                            : "bg-transparent text-muted hover:text-ink hover:bg-surface border border-border"
+                        ? "bg-ink text-white"
+                        : "bg-transparent text-muted hover:text-ink hover:bg-surface border border-border"
                         }`}
                 >
                     All
@@ -59,8 +59,8 @@ function CategoryNav({ categories, activeCategory, setActiveCategory }: {
                         key={cat}
                         onClick={() => setActiveCategory(cat)}
                         className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ${activeCategory === cat
-                                ? "bg-ink text-white"
-                                : "bg-transparent text-muted hover:text-ink hover:bg-surface border border-border"
+                            ? "bg-ink text-white"
+                            : "bg-transparent text-muted hover:text-ink hover:bg-surface border border-border"
                             }`}
                     >
                         {cat}
