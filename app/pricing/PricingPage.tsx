@@ -43,65 +43,71 @@ function TierCards() {
     return (
         <SectionWrapper background="surface" padding="small">
             <div className="container-wide">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mt-12">
                     {/* Basic */}
-                    <AnimatedSection delay={0.1}>
-                        <Card padding="large" hover className="h-full flex flex-col">
-                            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-muted">
+                    <AnimatedSection delay={0.1} className="h-full">
+                        <div className="h-full flex flex-col p-8 rounded-[2rem] bg-surface border border-border/40 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-muted mb-6">
                                 Basic
                             </span>
-                            <div className="mt-3 mb-2">
-                                <span className="text-4xl font-bold text-ink">
+                            <div className="mb-4">
+                                <span className="text-4xl lg:text-5xl font-semibold tracking-tight text-ink">
                                     {PRICING.basic.price}
                                 </span>
                             </div>
-                            <p className="text-sm text-muted mb-4">per cohort</p>
-                            <p className="text-muted text-[0.9375rem] leading-relaxed mb-6">
+                            <p className="text-sm text-muted mb-6 font-medium">per cohort</p>
+                            <p className="text-muted text-[1.0625rem] leading-relaxed mb-10">
                                 {PRICING.basic.description}
                             </p>
-                            <div className="mt-auto pt-4">
-                                <p className="text-sm text-muted mb-4">
+                            <div className="mt-auto">
+                                <div className="h-px w-full bg-border/50 mb-6" />
+                                <p className="text-sm font-medium text-muted/80 flex items-center gap-2 mb-8">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-muted/30" />
                                     {PRICING.basic.seats} seats per cohort
                                 </p>
-                                <CTAButton href="/apply" className="w-full">
+                                <CTAButton href="/apply" className="w-full justify-center">
                                     Apply — Basic
                                 </CTAButton>
                             </div>
-                        </Card>
+                        </div>
                     </AnimatedSection>
 
                     {/* Premium */}
-                    <AnimatedSection delay={0.2}>
-                        <Card
-                            padding="large"
-                            hover
-                            glow
-                            className="h-full flex flex-col relative"
-                        >
-                            <span className="absolute -top-3 right-6 bg-gradient-to-r from-accent to-accent-light text-white text-[0.6875rem] font-semibold uppercase tracking-wider px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(176,141,87,0.3)]">
-                                Recommended
-                            </span>
-                            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-accent">
-                                Premium
-                            </span>
-                            <div className="mt-3 mb-2">
-                                <span className="text-4xl font-bold text-ink">
-                                    {PRICING.premium.price}
-                                </span>
-                            </div>
-                            <p className="text-sm text-muted mb-4">per cohort</p>
-                            <p className="text-muted text-[0.9375rem] leading-relaxed mb-6">
-                                {PRICING.premium.description}
-                            </p>
-                            <div className="mt-auto pt-4">
-                                <p className="text-sm text-muted mb-4">
-                                    {PRICING.premium.seats} seats per cohort
+                    <AnimatedSection delay={0.2} className="h-full">
+                        <div className="relative h-full flex flex-col p-8 rounded-[2rem] bg-surface border-2 border-accent/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1">
+                            {/* Inner ambient glow for premium feel */}
+                            <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-b from-accent/5 to-transparent pointer-events-none" />
+                            
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="flex justify-between items-start mb-6">
+                                    <span className="text-xs font-semibold uppercase tracking-wider text-accent">
+                                        Premium
+                                    </span>
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-accent/10 text-accent text-[0.625rem] font-bold uppercase tracking-widest border border-accent/20">
+                                        Recommended
+                                    </span>
+                                </div>
+                                <div className="mb-4">
+                                    <span className="text-4xl lg:text-5xl font-semibold tracking-tight text-ink">
+                                        {PRICING.premium.price}
+                                    </span>
+                                </div>
+                                <p className="text-sm text-muted mb-6 font-medium">per cohort</p>
+                                <p className="text-muted text-[1.0625rem] leading-relaxed mb-10">
+                                    {PRICING.premium.description}
                                 </p>
-                                <CTAButton href="/apply" className="w-full bg-accent hover:bg-accent-dark text-white">
-                                    Apply — Premium
-                                </CTAButton>
+                                <div className="mt-auto">
+                                    <div className="h-px w-full bg-border/50 mb-6" />
+                                    <p className="text-sm font-medium text-muted/80 flex items-center gap-2 mb-8">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+                                        {PRICING.premium.seats} seats per cohort
+                                    </p>
+                                    <CTAButton href="/apply" className="w-full justify-center bg-accent hover:bg-accent-dark text-white shadow-[0_2px_10px_rgba(176,141,87,0.2)] hover:shadow-[0_4px_16px_rgba(176,141,87,0.3)] transition-shadow">
+                                        Apply — Premium
+                                    </CTAButton>
+                                </div>
                             </div>
-                        </Card>
+                        </div>
                     </AnimatedSection>
                 </div>
             </div>

@@ -6,6 +6,7 @@ export interface Lesson {
 
 export interface Module {
     title: string;
+    instructor?: string;
     lessons: Lesson[];
 }
 
@@ -22,171 +23,176 @@ export interface Week {
 export const CURRICULUM_WEEKS: Week[] = [
     {
         number: 1,
-        pillar: "Think",
-        title: "Think, Scope, and Plan",
-        goal: "Define a clear, buildable product idea and create a structured plan before touching any tools.",
+        pillar: "Setup",
+        title: "Day 1 Integration",
+        goal: "Hook up the tools and generate a functional front-end V1 by Friday.",
         modules: [
             {
-                title: "The New Builder Mindset",
+                title: "The Stack Setup",
                 lessons: [
-                    { title: "Welcome to the Cohort: What You're Here to Build" },
-                    { title: "What Vibe Coding Actually Means" },
-                    { title: "How AI Changes What's Possible for Builders" },
+                    { title: "Installing Antigravity" },
+                    { title: "Configuring Claude Limits" },
+                    { title: "Setting up Gemini Nano Banana" },
                 ],
             },
             {
-                title: "Choosing the Right Idea",
+                title: "Prompting for UI",
+                instructor: "Maurice Edohoeket",
                 lessons: [
-                    { title: "What Makes an Idea Worth Building in 4 Weeks" },
-                    { title: "Evaluating Ideas for Scope, Impact, and Feasibility" },
-                    { title: "Refining Your Idea into a Product Thesis" },
+                    { title: "Generating Next.js/Tailwind Structures" },
+                    { title: "Communicating Visual Intent" },
+                    { title: "Iterating on Layouts Instantly" },
                 ],
             },
             {
-                title: "Scoping the MVP",
+                title: "Rapid Prototyping",
                 lessons: [
-                    { title: "What an MVP Is — and What It Isn't" },
-                    { title: "Feature Prioritization for a 4-Week Build" },
-                    { title: "Defining Success for Your Project" },
+                    { title: "Generating 3 Core Screens in an Afternoon" },
+                    { title: "Mapping State Without Writing It" },
+                    { title: "Connecting Interactive Links" },
                 ],
             },
             {
-                title: "Planning Before Prompting",
+                title: "Refining the Output",
+                instructor: "Maurice Edohoeket",
                 lessons: [
-                    { title: "Turning Ideas into Structured Inputs" },
-                    { title: "Writing a Product Brief That Works" },
-                    { title: "Planning the Build Timeline" },
+                    { title: "Teaching AI to Fix Visual Bugs" },
+                    { title: "Handling Responsive Breakpoints" },
+                    { title: "Overriding Bad AI Assumptions" },
                 ],
             },
         ],
-        deliverable: "Product Clarity Pack",
-        liveTheme: "Idea selection, scoping, and product clarity",
+        deliverable: "Functional Front-End V1",
+        liveTheme: "Live Prototyping and AI Pair-Programming",
     },
     {
         number: 2,
-        pillar: "Design",
-        title: "Design the Experience",
-        goal: "Map the user journey, wireframe key screens, and establish a design direction ready for build week.",
+        pillar: "Logic",
+        title: "Connecting the Brains",
+        goal: "Make the buttons actually do something using Gemini Nano Banana and Antigravity.",
         modules: [
             {
-                title: "UX Before UI",
+                title: "State & Data Flow",
                 lessons: [
-                    { title: "Why Good Products Start with Flow, Not Screens" },
-                    { title: "Understanding Users Without a Research Team" },
-                    { title: "Mapping the Core User Flow" },
+                    { title: "Prompting for React State" },
+                    { title: "Explaining Component Lifecycles to Claude" },
+                    { title: "Managing Global vs. Local State via AI" },
                 ],
             },
             {
-                title: "Structure the Product",
+                title: "API & Integration Prep",
                 lessons: [
-                    { title: "Information Architecture for Small Products" },
-                    { title: "Defining Screens and Navigation" },
-                    { title: "Content Strategy for Builders" },
+                    { title: "Structuring Data Models" },
+                    { title: "Writing Clear Interface Contracts" },
+                    { title: "Mocking Fetch Calls" },
                 ],
             },
             {
-                title: "Wireframe with Intention",
+                title: "Using Gemini Nano Banana",
                 lessons: [
-                    { title: "Wireframing for Speed and Clarity" },
-                    { title: "From Wireframe to Interaction Flow" },
-                    { title: "Common UX Patterns That Work" },
+                    { title: "Implementing Complex Logic Circuits" },
+                    { title: "Handling Async Workflows" },
+                    { title: "Optimizing Client-Side Logic" },
                 ],
             },
             {
-                title: "Visual Direction and System Thinking",
+                title: "The 'Stuck' Protocol",
                 lessons: [
-                    { title: "Design Systems for Fast Builders" },
-                    { title: "Choosing a Visual Direction" },
-                    { title: "Preparing Your Design for Build Week" },
+                    { title: "When AI Hallucinates Bad Code" },
+                    { title: "Breaking Out of Error Loops" },
+                    { title: "Reading Stack Traces with Claude" },
                 ],
             },
         ],
-        deliverable: "Experience Design Pack",
-        liveTheme: "UX critique, flow review, and design direction",
+        deliverable: "Linked Up MVP Prototype",
+        liveTheme: "Logic Deep Dive & Breaking Out of AI Loops",
     },
     {
         number: 3,
-        pillar: "Build",
-        title: "Build the MVP",
-        goal: "Translate designs into a working product using AI-native build tools and workflows.",
+        pillar: "Polish",
+        title: "Persistence & Polish",
+        goal: "Hook up a backend and make the app look premium.",
         modules: [
             {
-                title: "Translating Design into Build Instructions",
+                title: "Backend in a Prompt",
                 lessons: [
-                    { title: "From Product Brief to Build Prompt" },
-                    { title: "Breaking Down Features into Buildable Tasks" },
-                    { title: "Writing Instructions AI Tools Can Follow" },
+                    { title: "Generating Database Schemas" },
+                    { title: "Writing Supabase/Firebase RLS Policies" },
+                    { title: "Hooking Up Authentication Flows" },
                 ],
             },
             {
-                title: "Working with AI Tools and Agents",
+                title: "Antigravity Deep Dive",
+                instructor: "Maurice Edohoeket",
                 lessons: [
-                    { title: "Choosing the Right Tool for the Job" },
-                    { title: "Effective Prompt Strategies for Building" },
-                    { title: "Managing Multi-Step AI Workflows" },
+                    { title: "Managing System-Level Workflows" },
+                    { title: "Automating Multi-Step Operations" },
+                    { title: "Advanced Antigravity Prompting" },
                 ],
             },
             {
-                title: "Core Product Build",
+                title: "Interaction & Animation",
+                instructor: "Maurice Edohoeket",
                 lessons: [
-                    { title: "Building the Main Screens" },
-                    { title: "Adding Logic and Functionality" },
-                    { title: "Connecting the Pieces Together" },
+                    { title: "Prompting for Framer Motion" },
+                    { title: "Injecting Micro-Interactions" },
+                    { title: "Polishing Hover States and Transitions" },
                 ],
             },
             {
-                title: "Debug, Improve, Repeat",
+                title: "User Edge Cases",
                 lessons: [
-                    { title: "Debugging with Better Instructions" },
-                    { title: "MVP Progress Review" },
-                    { title: "Iteration Strategies That Save Time" },
+                    { title: "Securing the App Against Bad Inputs" },
+                    { title: "Writing AI Guardrails" },
+                    { title: "Testing Error States" },
                 ],
             },
         ],
-        deliverable: "MVP Build Review",
-        liveTheme: "Build walkthrough, debugging, and iteration",
+        deliverable: "Full-Stack MVP",
+        liveTheme: "Database Hookups & Premium UI Polish",
     },
     {
         number: 4,
         pillar: "Ship",
-        title: "Polish, Ship, and Present",
-        goal: "Refine the product, prepare it for launch, and present it as a portfolio-ready case study.",
+        title: "Ship & Scale",
+        goal: "Get it live on Vercel/Netlify and build your portfolio case study.",
         modules: [
             {
-                title: "Polish the Product",
+                title: "Deployment Workflows",
                 lessons: [
-                    { title: "What Makes a Product Feel Finished" },
-                    { title: "Visual and Interaction Polish" },
-                    { title: "Edge Cases and Final Fixes" },
+                    { title: "Pushing Code to Production" },
+                    { title: "Fixing Build Errors with Claude" },
+                    { title: "Setting Environment Variables" },
                 ],
             },
             {
-                title: "Prepare for Launch",
+                title: "Pre-Launch QA",
+                lessons: [
+                    { title: "AI-Driven Browser Testing" },
+                    { title: "Auditing Accessibility and Performance" },
+                    { title: "Mobile Verification" },
+                ],
+            },
+            {
+                title: "The Portfolio Story",
+                instructor: "Maurice Edohoeket",
+                lessons: [
+                    { title: "Writing the Case Study with AI" },
+                    { title: "Documenting Your Architecture" },
+                    { title: "Creating Demo Videos" },
+                ],
+            },
+            {
+                title: "Launch Day",
                 lessons: [
                     { title: "The Launch-Readiness Checklist" },
-                    { title: "Setting Up Hosting and Deployment" },
-                    { title: "Pre-Launch Testing and QA" },
-                ],
-            },
-            {
-                title: "Tell the Story of the Product",
-                lessons: [
-                    { title: "How to Present Your Product Clearly" },
-                    { title: "Turning the Project into a Case Study" },
-                    { title: "Writing About What You Built" },
-                ],
-            },
-            {
-                title: "Showcase and Next Steps",
-                lessons: [
-                    { title: "Final Demo Preparation" },
-                    { title: "What to Do After the Cohort" },
-                    { title: "Building Your Next Product" },
+                    { title: "Distributing Your Product" },
+                    { title: "What to Do After Phase 1" },
                 ],
             },
         ],
-        deliverable: "Final Launch Pack",
-        liveTheme: "Polish, demos, and final presentation prep",
+        deliverable: "Live Product & Case Study",
+        liveTheme: "Launch Party and Portfolio Reviews",
     },
 ];
 
@@ -317,9 +323,9 @@ export const FAQ_DATA: FAQCategory[] = [
                     "Payment details and methods will be shared with accepted students in the acceptance email. We aim to make the payment process as straightforward as possible.",
             },
             {
-                question: "Is there a refund policy?",
+                question: "Is there a guarantee or refund policy?",
                 answer:
-                    "Our refund and transfer policy will be shared with accepted students before payment. We want every student to feel confident in their decision before committing.",
+                    "Yes. We offer a 14-Day Action-Based Guarantee. If you show up for the first two weeks, complete the assignments, and find that the cohort isn't delivering the value promised, we'll issue a full refund. We want you to feel completely confident, while ensuring we're working with builders who are ready to put in the effort.",
             },
         ],
     },
@@ -410,9 +416,9 @@ export const COMPARISON_FEATURES: ComparisonFeature[] = [
 
 export const LEARNING_OUTCOMES = [
     "Product thinking and idea validation",
-    "AI-native workflow design",
+    "AI-native workflow design with Google Antigravity",
     "UX structure and user flow mapping",
-    "Prompt-to-build translation",
+    "Prompt-to-build translation using Claude & Gemini Nano Banana",
     "Iteration and debugging strategies",
     "Product polish and presentation",
 ];

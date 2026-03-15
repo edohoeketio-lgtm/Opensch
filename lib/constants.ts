@@ -8,6 +8,7 @@ export const ACADEMY = {
 
 export const COHORT = {
     duration: "4 weeks",
+    isSoldOut: false,
     totalSeats: 30,
     basicSeats: 20,
     premiumSeats: 10,
@@ -28,8 +29,8 @@ export const COHORT = {
 export const PRICING = {
     basic: {
         name: "Basic",
-        price: "₦100,000",
-        priceValue: 100000,
+        price: "$99",
+        priceValue: 99,
         seats: 20,
         tagline: "Structured learning and community",
         description:
@@ -39,8 +40,8 @@ export const PRICING = {
     },
     premium: {
         name: "Premium",
-        price: "₦180,000",
-        priceValue: 180000,
+        price: "$199",
+        priceValue: 199,
         seats: 10,
         tagline: "Closer feedback, support, and accountability",
         description:

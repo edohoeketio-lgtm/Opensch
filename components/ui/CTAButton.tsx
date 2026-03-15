@@ -57,18 +57,19 @@ export function CTAButton({
         </>
     );
 
+    const MotionLink = motion.create ? motion.create(Link) : (motion as any)(Link);
+
     if (href) {
         return (
-            <motion.div
+            <MotionLink
+                href={href}
+                className={cn(baseStyles, "inline-block")}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="inline-block"
             >
-                <Link href={href} className={baseStyles}>
-                    {inner}
-                </Link>
-            </motion.div>
+                {inner}
+            </MotionLink>
         );
     }
 

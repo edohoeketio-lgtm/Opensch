@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { SectionWrapper } from "@/components/ui/SectionWrapper";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { CTAButton } from "@/components/ui/CTAButton";
@@ -44,8 +46,8 @@ function AboutHero() {
     );
 }
 
-// ===== Founder Story =====
-function FounderStory() {
+// ===== The Instructors =====
+function InstructorStory() {
     return (
         <SectionWrapper background="surface">
             <div className="container-wide">
@@ -53,35 +55,37 @@ function FounderStory() {
                     <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-10 items-start">
                         <AnimatedSection>
                             <div className="relative w-40 h-40 md:w-full md:h-auto md:aspect-square mx-auto md:mx-0">
-                                {/* Gradient ring */}
                                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-accent via-accent-light to-accent-dark opacity-15 animate-pulse-glow" />
-                                <div className="absolute inset-[3px] rounded-2xl bg-surface flex items-center justify-center">
-                                    <span className="text-accent text-5xl font-serif">S</span>
+                                <div className="absolute inset-[3px] rounded-2xl bg-surface flex items-center justify-center overflow-hidden border border-accent/20">
+                                    <Image
+                                        src="/images/Maurice.png"
+                                        alt="Maurice Edohoeket"
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 160px, 200px"
+                                        priority
+                                    />
                                 </div>
-                                <div className="absolute inset-0 rounded-2xl border border-accent/20" />
                             </div>
                         </AnimatedSection>
 
                         <AnimatedSection delay={0.1}>
                             <div>
-                                <h2 className="text-ink mb-5">The <span className="font-serif text-accent">founder</span></h2>
+                                <h2 className="text-ink mb-5">The <span className="font-serif text-accent">instructors</span></h2>
                                 <div className="space-y-4 text-muted text-[0.9375rem] leading-relaxed">
                                     <p>
-                                        OpenSch was created by a designer and builder who spent years
-                                        learning the hard way — through scattered resources, trial and
-                                        error, and too many unfinished projects. The frustration of having
-                                        great ideas but no clear process to bring them to life is the
-                                        reason this academy exists.
+                                        OpenSch was created by builders who spent years learning the hard way — 
+                                        through scattered resources, trial and error, and too many unfinished projects. 
+                                        The frustration of having great ideas but no clear process to bring them to life 
+                                        is the reason this academy exists.
                                     </p>
                                     <p>
-                                        After discovering how AI tools could accelerate the path from
-                                        idea to shipped product, the vision became clear: build a
-                                        structured program that teaches others the same workflow. Not
-                                        theory-first. Not tool-worship. A practical, milestone-driven
-                                        process that works.
+                                        Led by Maurice Edohoeket alongside two expert instructors, the vision is clear:
+                                        build a structured program that teaches others the same workflow we use daily. Not
+                                        theory-first. Not tool-worship. A practical, milestone-driven process that works.
                                     </p>
                                     <p className="italic border-l-2 border-accent/30 pl-5 text-ink/70">
-                                        &ldquo;The goal has always been the same — help people go from &lsquo;I
+                                        &ldquo;Our goal has always been the same — help people go from &lsquo;I
                                         have an idea&rsquo; to &lsquo;I shipped it&rsquo; in 4 weeks.
                                         With a real curriculum, real deadlines, and real support.&rdquo;
                                     </p>
@@ -94,6 +98,7 @@ function FounderStory() {
         </SectionWrapper>
     );
 }
+
 
 // ===== Why This Exists =====
 function WhyThisExists() {
@@ -282,7 +287,7 @@ export default function AboutPage() {
     return (
         <>
             <AboutHero />
-            <FounderStory />
+            <InstructorStory />
             <WhyThisExists />
             <Philosophy />
             <WhatToExpect />
