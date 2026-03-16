@@ -69,7 +69,7 @@ export const CTA = {
 
 export const NAV_LINKS = [
     { label: "Home", href: "/" },
-    { label: "Curriculum", href: "/curriculum" },
+    { label: "Curriculum", href: "/syllabus" },
     { label: "Pricing", href: "/pricing" },
     { label: "FAQ", href: "/faq" },
     { label: "About", href: "/about" },
@@ -78,7 +78,7 @@ export const NAV_LINKS = [
 export const FOOTER_LINKS = {
     pages: [
         { label: "Home", href: "/" },
-        { label: "Curriculum", href: "/curriculum" },
+        { label: "Curriculum", href: "/syllabus" },
         { label: "Pricing", href: "/pricing" },
         { label: "FAQ", href: "/faq" },
         { label: "About", href: "/about" },

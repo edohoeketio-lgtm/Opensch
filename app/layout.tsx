@@ -41,10 +41,8 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`}>
-            <body className="min-h-screen flex flex-col">
-                <Navbar />
-                <main className="flex-1 pt-16 md:pt-[72px]">{children}</main>
-                <Footer />
+            <body className="min-h-screen flex flex-col bg-black text-white">
+                {children}
             </body>
         </html>
     );

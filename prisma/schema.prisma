@@ -1,0 +1,223 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum SubmissionStatus {
+  PENDING
+  AUTO_PASSED
+  NEEDS_REVIEW
+  REJECTED
+}
+
+// -----------------------------------------------------------------------------
+// MODELS
+// -----------------------------------------------------------------------------
+
+model User {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email              String   @unique
+  role               Role     @default(STUDENT)
+  stripeCustomerId   String?  @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  profile            Profile?
+  enrollments        Enrollment[]
+  progressStates     ProgressState[]
+  submissions        Submission[]
+  messagesSent       Message[]
+  
+  // For instructors only
+  coursesInstructed  Course[] @relation("CourseInstructor")
+}
+
+model Profile {
+  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String  @unique @db.Uuid
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  avatarUrl      String?
+  githubHandle   String?
+  linkedinUrl    String?
+  bio            String?
+  motivation     String? // e.g., "Get Hired", "Build a Startup"
+  activeBadgeId  String?
+  isPublic       Boolean @default(false)
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Course {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  description  String
+  slug         String   @unique
+  thumbnailUrl String?
+  isPublished  Boolean  @default(false)
+  
+  instructorId String   @db.Uuid
+  instructor   User     @relation("CourseInstructor", fields: [instructorId], references: [id])
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  modules      Module[]
+  enrollments  Enrollment[]
+}
+
+model Enrollment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @db.Uuid
+  courseId   String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  isActive   Boolean  @default(true)
+  
+  // Cached telemetry to prevent N+1 aggregations in Admin Roster CRM
+  cachedProgress Int      @default(0)
+  riskStatus     String   @default("low") // low, medium, high
+  lastActiveAt   DateTime @default(now())
+  
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Module {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId    String   @db.Uuid
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?
+  order       Int
+  isPublished Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  moduleId       String   @db.Uuid
+  module         Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  
+  title          String
+  description    String?
+  order          Int
+  muxPlaybackId  String?
+  isPreview      Boolean  @default(false)
+  isPublished    Boolean  @default(false)
+  
+  // AI Transcription Data
+  transcriptRawText   String?
+  transcriptCleanText String?
+  transcriptSegments  Json?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  progressStates ProgressState[]
+  assignments    Assignment[]
+}
+
+model ProgressState {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @db.Uuid
+  lessonId       String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson         Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  watchedSeconds     Int      @default(0)
+  maxWatchedSeconds  Int      @default(0)
+  isCompleted        Boolean  @default(false)
+  lastWatchedAt      DateTime @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+// -----------------------------------------------------------------------------
+// ASSESSMENT & AI GRADING
+// -----------------------------------------------------------------------------
+
+model Assignment {
+  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lessonId                 String   @db.Uuid
+  lesson                   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  prompt                   String
+  hiddenIdealAnswerRubric  String   // Hidden from students, used by LLM grader
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  submissions              Submission[]
+}
+
+model Submission {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assignmentId       String   @db.Uuid
+  studentId          String   @db.Uuid
+  assignment         Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student            User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  contentUrlOrCode   String
+  aiConfidenceScore  Int?
+  aiRationale        String?    // Feedback from the LLM grader
+  status             SubmissionStatus @default(PENDING)
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// COMMUNITY & COMMUNICATION
+// -----------------------------------------------------------------------------
+
+model Thread {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // Can be tied to a lesson, or generic for the "Campus"
+  targetId    String?   @db.Uuid // Polymorphic ID (e.g. lessonId)
+  targetType  String?   // E.g. "LESSON" or "CAMPUS"
+  
+  title       String
+  isResolved  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  messages    Message[]
+}
+
+model Message {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadId       String   @db.Uuid
+  senderId       String   @db.Uuid // The Student or Instructor, OR the AI system
+  thread         Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender         User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  content        String
+  isAiGenerated  Boolean  @default(false)
+  upvotes        Int      @default(0)
+  isInstructorAnswer Boolean @default(false) // Tag to highlight official answers
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
