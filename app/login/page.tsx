@@ -11,18 +11,9 @@ export default function LoginPage() {
   const supabase = createClient()
 
   const handleOAuthLogin = async (provider: 'github' | 'google') => {
-    setLoading(provider)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-      },
-    })
-    
-    if (error) {
-      console.error('Error logging in:', error)
-      setLoading(null)
-    }
+    // TESTING BYPASS: OAuth is not configured on the remote Supabase project.
+    // Intercepting the click to prevent the raw JSON "Unsupported provider" crash.
+    setErrorMsg(`OAuth (${provider}) is disabled for this demo. Please use the Email form above to automatically bypass authentication.`)
   }
 
   const handleEmailLogin = async (e: React.FormEvent) => {
