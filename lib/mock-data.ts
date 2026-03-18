@@ -2,7 +2,7 @@ import { Target, Award, CheckCircle2, HelpCircle, BookOpen, Video, Link as LinkI
 
 export const MOCK_FEED_ITEMS = [
   {
-    id: "1",
+    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
     type: "Announcement",
     user: { name: "Maurice E.", initial: "M", role: "Instructor" },
     time: "2 hours ago",
@@ -17,7 +17,7 @@ export const MOCK_FEED_ITEMS = [
     sprintContext: "Sprint 3"
   },
   {
-    id: "2",
+    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
     type: "Submission",
     user: { name: "Sarah J.", initial: "S", role: "Student" },
     time: "4 hours ago",
@@ -32,7 +32,7 @@ export const MOCK_FEED_ITEMS = [
     sprintContext: "Sprint 3"
   },
   {
-    id: "3",
+    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
     type: "Question",
     user: { name: "Marcus T.", initial: "M", role: "Student" },
     time: "1 day ago",
@@ -47,7 +47,7 @@ export const MOCK_FEED_ITEMS = [
     sprintContext: "Sprint 3"
   },
   {
-    id: "5",
+    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55",
     type: "Peer Review",
     user: { name: "Elena R.", initial: "E", role: "Premium" },
     time: "2 days ago",
@@ -62,7 +62,7 @@ export const MOCK_FEED_ITEMS = [
     sprintContext: "Sprint 3"
   },
   {
-    id: "6",
+    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a66",
     type: "Resource",
     user: { name: "David M.", initial: "D", role: "Student" },
     time: "2 days ago",
@@ -77,7 +77,7 @@ export const MOCK_FEED_ITEMS = [
     sprintContext: "General"
   },
   {
-    id: "7",
+    id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a77",
     type: "Win",
     user: { name: "James L.", initial: "J", role: "Premium" },
     time: "3 days ago",

@@ -25,18 +25,14 @@ export async function getAuthenticatedUser() {
 
   // Fallback to default student if no cookie or user not found
   if (!user) {
-    user = await prisma.user.findFirst({
-      where: { role: 'STUDENT' }
+    user = await prisma.user.upsert({
+      where: { email: "student@opensch.com" },
+      update: {},
+      create: {
+        email: "student@opensch.com",
+        role: "STUDENT",
+      }
     });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: "student@opensch.com",
-          role: "STUDENT",
-        }
-      });
-    }
   }
 
   if (user) {
