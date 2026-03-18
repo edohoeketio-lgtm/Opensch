@@ -5,11 +5,11 @@ import OpenAI from 'openai'; // for embedding generation
 import { getAuthenticatedUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
-const rawOpenAi = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
 export async function POST(req: Request) {
   try {
+    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+    const rawOpenAi = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+
     const { messages, lessonId } = await req.json();
     
     // We only embed the final message the user just sent to retrieve the most pertinent context 
