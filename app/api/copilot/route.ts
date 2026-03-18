@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 
 
 
+export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
     // Initialize OpenAI client dynamically at runtime

@@ -5,6 +5,7 @@ import OpenAI from 'openai'; // for embedding generation
 import { getAuthenticatedUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
+export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
