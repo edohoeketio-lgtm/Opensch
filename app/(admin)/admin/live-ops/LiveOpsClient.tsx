@@ -28,7 +28,7 @@ export default function LiveOpsClient({ initialEvents, cohorts }: LiveOpsClientP
   const [startTime, setStartTime] = useState("");
   const [durationMinutes, setDurationMinutes] = useState("60");
   const [link, setLink] = useState("");
-  const [type, setType] = useState<EventType>(EventType.OFFICE_HOURS);
+  const [type, setType] = useState<EventType>('OFFICE_HOURS');
   const [cohortId, setCohortId] = useState("");
 
   const handleCreateEvent = async (e: React.FormEvent) => {
