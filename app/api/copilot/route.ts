@@ -3,13 +3,14 @@ import OpenAI from 'openai';
 import { getAuthenticatedUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
-// We execute this on Node runtime so @prisma/client works natively
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+
 
 export async function POST(req: Request) {
   try {
+    // Initialize OpenAI client dynamically at runtime
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
     const { messages, transcript } = await req.json();
     const lastMessage = messages?.[messages.length - 1]?.content || "";
 

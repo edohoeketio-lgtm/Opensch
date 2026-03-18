@@ -24,16 +24,17 @@ const TranscribeSchema = z.object({
   lessonId: z.string().uuid({ message: "Invalid Lesson ID format" }),
 });
 
-// Initialize OpenAI client
-// Ensure OPENAI_API_KEY is set in your .env or Vercel environment variables
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+
 
 // Set a longer timeout for the API route if the video file is large
 export const maxDuration = 120; // 2 minutes
 
 export async function POST(req: Request) {
+  // Initialize OpenAI client dynamically at runtime
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(
       { error: 'OPENAI_API_KEY is not configured in the environment variables.' },

@@ -24,14 +24,16 @@ const GradeSchema = z.object({
   submissionId: z.string().uuid("Invalid submission ID"),
 });
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+
 
 export const maxDuration = 60; // 1 min timeout for grading
 
 export async function POST(req: Request) {
+  // Initialize OpenAI client dynamically at runtime
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
   // Security Block: RBAC Auth Check
   const user = await getAuthenticatedUser();
   if (!user || (user.role !== 'INSTRUCTOR' && user.role !== 'ADMIN')) {
