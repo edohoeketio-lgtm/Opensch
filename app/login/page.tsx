@@ -28,25 +28,27 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading('email')
     
-    // DEV BYPASS: Allow quick UI testing locally without email verification
-    if (process.env.NODE_ENV === 'development') {
-      window.location.href = '/onboarding'
-      return
-    }
-    
-    // Supabase signInWithOtp automatically handles both login and signup
-    const { error } = await supabase.auth.signInWithOtp({
+    // TESTING BYPASS: Magic Links removed. We use a Universal Dummy Password to silently authenticate the session.
+    const dummyPassword = "OpenSchTest-2026-Bypass!"
+
+    // 1. Unconditionally attempt to create the account (it fails silently if they already exist)
+    await supabase.auth.signUp({
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-      },
+      password: dummyPassword,
+    })
+
+    // 2. Unconditionally attempt to sign them into that account
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: dummyPassword,
     })
 
     if (error) {
-       console.error('Error sending magic link:', error)
-       alert(error.message)
+       console.error('Error logging in:', error)
+       alert(`Authentication Failed: ${error.message} \n\nIMPORTANT: You must go to your Supabase Dashboard -> Authentication -> Providers -> Email and turn OFF "Confirm email" for this to work.`)
     } else {
-       alert(isSignUp ? 'Check your email to verify your account!' : 'Check your email for the login link!')
+       // Success! The session cookie is set. Redirecting safely.
+       window.location.href = '/onboarding'
     }
     setLoading(null)
   }
