@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState<string | null>(null)
   const [isSignUp, setIsSignUp] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const supabase = createClient()
 
   const handleOAuthLogin = async (provider: 'github' | 'google') => {
@@ -26,6 +27,7 @@ export default function LoginPage() {
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setErrorMsg(null)
     setLoading('email')
     
     // TESTING BYPASS: Magic Links removed. We use a Universal Dummy Password to silently authenticate the session.
@@ -45,7 +47,11 @@ export default function LoginPage() {
 
     if (error) {
        console.error('Error logging in:', error)
-       alert(`Authentication Failed: ${error.message} \n\nIMPORTANT: You must go to your Supabase Dashboard -> Authentication -> Providers -> Email and turn OFF "Confirm email" for this to work.`)
+       if (error.message.includes("Invalid login credentials") || error.message.includes("Email not confirmed")) {
+           setErrorMsg("This email was previously registered. For this automated testing bypass, please type a brand new, unused email address.")
+       } else {
+           setErrorMsg(error.message)
+       }
     } else {
        // Success! The session cookie is set. Redirecting safely.
        window.location.href = '/onboarding'
@@ -96,6 +102,12 @@ export default function LoginPage() {
                 className="w-full bg-neutral-950/50 border border-neutral-800 text-white rounded-lg px-4 py-3 placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-neutral-500 focus:border-neutral-500 transition-all text-sm"
               />
             </div>
+
+            {errorMsg && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs font-medium text-center leading-relaxed">
+                {errorMsg}
+              </div>
+            )}
             
             <button 
               type="submit" 
