@@ -84,6 +84,7 @@ export const FOOTER_LINKS = {
         { label: "About", href: "/about" },
         { label: "Apply", href: "/apply" },
         { label: "Student Dashboard", href: "/dashboard" },
+        { label: "Admin Dashboard (Demo)", href: "/admin" },
     ],
     resources: [
         { label: "Contact", href: "mailto:hello@opensch.com" },

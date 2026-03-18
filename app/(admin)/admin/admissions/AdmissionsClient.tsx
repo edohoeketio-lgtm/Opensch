@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import { ApplicationStatus, PaymentStatus } from "@prisma/client";
+
+const APPLICATION_STATUSES: ApplicationStatus[] = [
+  'NEW', 'REVIEWING', 'INTERVIEWED', 'ACCEPTED', 'REJECTED', 'ENROLLED'
+];
+
+const PAYMENT_STATUSES: PaymentStatus[] = [
+  'UNPAID', 'DEPOSIT_PAID', 'FULLY_PAID'
+];
 import { updateApplicationStatus, updatePaymentStatus, convertApplicationToStudent } from "@/app/actions/admissions";
 import { createPaystackSession } from "@/app/actions/billing";
 import { formatDistanceToNow } from "date-fns";
@@ -148,7 +156,7 @@ export default function AdmissionsClient({ initialApplications, cohorts }: Admis
                    className="w-full bg-black border border-white/10 rounded-md text-sm px-3 py-1.5 focus:border-white/30 focus:outline-none"
                    disabled={app.status === 'ENROLLED'}
                  >
-                   {Object.keys(ApplicationStatus).map(s => (
+                   {APPLICATION_STATUSES.map(s => (
                      <option key={s} value={s}>{s}</option>
                    ))}
                  </select>
@@ -158,7 +166,7 @@ export default function AdmissionsClient({ initialApplications, cohorts }: Admis
                    onChange={(e) => handlePaymentChange(app.id, e.target.value as PaymentStatus)}
                    className="w-full bg-black border border-white/10 rounded-md text-sm px-3 py-1.5 focus:border-white/30 focus:outline-none"
                  >
-                   {Object.keys(PaymentStatus).map(s => (
+                   {PAYMENT_STATUSES.map(s => (
                      <option key={s} value={s}>{s.replace('_', ' ')}</option>
                    ))}
                  </select>
