@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ApplicationStatus, PaymentStatus } from "@prisma/client";
+type ApplicationStatus = 'NEW' | 'REVIEWING' | 'INTERVIEWED' | 'ACCEPTED' | 'REJECTED' | 'ENROLLED';
+type PaymentStatus = 'UNPAID' | 'DEPOSIT_PAID' | 'FULLY_PAID';
 
 const APPLICATION_STATUSES: ApplicationStatus[] = [
   'NEW', 'REVIEWING', 'INTERVIEWED', 'ACCEPTED', 'REJECTED', 'ENROLLED'

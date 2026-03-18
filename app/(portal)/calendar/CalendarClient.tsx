@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { updateRSVP } from "@/app/actions/events";
-import { RSVPStatus } from "@prisma/client";
+type RSVPStatus = 'ATTENDING' | 'DECLINED';
 
 interface CalendarClientProps {
   initialEvents: any[];

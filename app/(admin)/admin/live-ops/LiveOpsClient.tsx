@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { EventType } from "@prisma/client";
+type EventType = 'OFFICE_HOURS' | 'LIVE_LECTURE' | 'DEMO_DAY' | 'SOCIAL';
 
 const EVENT_TYPES: EventType[] = [
   'OFFICE_HOURS', 'LIVE_LECTURE', 'DEMO_DAY', 'SOCIAL'
