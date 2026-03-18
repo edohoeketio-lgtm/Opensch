@@ -27,10 +27,12 @@ export async function getAuthenticatedUser() {
   if (!user) {
     user = await prisma.user.upsert({
       where: { email: "student@opensch.com" },
-      update: {},
+      update: {
+        role: "ADMIN"
+      },
       create: {
         email: "student@opensch.com",
-        role: "STUDENT",
+        role: "ADMIN",
       }
     });
   }
