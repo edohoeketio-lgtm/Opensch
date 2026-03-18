@@ -47,7 +47,7 @@ export default async function AnalyticsDashboardPage() {
 
   const wordFrequency: Record<string, number> = {};
   
-  recentCopilotMessages.forEach(msg => {
+  recentCopilotMessages.forEach((msg: { content: string }) => {
     // Strip punctuation, split by space, basic filtering
     const words = msg.content
       .toLowerCase()
