@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { EventType } from "@prisma/client";
+
+const EVENT_TYPES: EventType[] = [
+  'OFFICE_HOURS', 'LIVE_LECTURE', 'DEMO_DAY', 'SOCIAL'
+];
 import { createEvent } from "@/app/actions/events";
 import { useRouter } from "next/navigation";
 
@@ -123,7 +127,7 @@ export default function LiveOpsClient({ initialEvents, cohorts }: LiveOpsClientP
               <div>
                  <label className="block text-xs text-white/50 mb-1">Event Type</label>
                  <select value={type} onChange={(e) => setType(e.target.value as EventType)} className="w-full bg-white/5 border border-white/10 rounded-md p-2 text-sm text-white">
-                    {Object.keys(EventType).map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
+                    {EVENT_TYPES.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
                  </select>
               </div>
 
