@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, MessageSquare, Briefcase, ChevronRight, CheckCircle, ChevronLeft, Award } from 'lucide-react';
+import { Home, BookOpen, MessageSquare, Briefcase, ChevronRight, CheckCircle, ChevronLeft, Award, Calendar } from 'lucide-react';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -11,6 +11,7 @@ export function Sidebar() {
 
   const navItems = [
     { name: 'Overview', href: '/dashboard', icon: Home },
+    { name: 'Live Calendar', href: '/calendar', icon: Calendar },
     { name: 'Curriculum', href: '/curriculum', icon: BookOpen },
     { name: 'Campus Feed', href: '/feed', icon: MessageSquare },
     { name: 'My Portfolio', href: '/portfolio', icon: Award },

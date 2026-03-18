@@ -76,7 +76,13 @@ export function Navbar() {
                     </div>
 
                     {/* Desktop CTA */}
-                    <div className="hidden md:block">
+                    <div className="hidden md:flex items-center gap-4">
+                        <Link 
+                            href="/login" 
+                            className="text-[0.875rem] font-medium text-ink/70 hover:text-ink transition-colors duration-300"
+                        >
+                            Portal Login
+                        </Link>
                         <CTAButton href="/apply" size="default">
                             Apply
                         </CTAButton>
@@ -130,11 +136,18 @@ export function Navbar() {
                                 ))}
                             </nav>
                             <motion.div
-                                className="mt-10"
+                                className="mt-10 space-y-4"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4, type: "spring" }}
                             >
+                                <Link
+                                    href="/login"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="block w-full text-center py-3 text-lg font-medium text-ink/70 hover:text-ink transition-colors"
+                                >
+                                    Portal Login
+                                </Link>
                                 <CTAButton
                                     href="/apply"
                                     size="large"

@@ -83,6 +83,7 @@ export const FOOTER_LINKS = {
         { label: "FAQ", href: "/faq" },
         { label: "About", href: "/about" },
         { label: "Apply", href: "/apply" },
+        { label: "Student Dashboard", href: "/dashboard" },
     ],
     resources: [
         { label: "Contact", href: "mailto:hello@opensch.com" },
@@ -92,3 +93,15 @@ export const FOOTER_LINKS = {
         { label: "Privacy Policy", href: "#" },
     ],
 } as const;
+
+export const CATEGORY_META_MAP: Record<string, { icon: string, color: string, bg: string }> = {
+    'Question': { icon: 'HelpCircle', color: 'text-white', bg: 'bg-white/5' },
+    'Build': { icon: 'CheckCircle2', color: 'text-accent', bg: 'bg-accent/10' },
+    'Deliverable': { icon: 'Target', color: 'text-white', bg: 'bg-deep-surface' },
+    'Feedback': { icon: 'BookOpen', color: 'text-white', bg: 'bg-deep-surface' },
+    'Announcement': { icon: 'Award', color: 'text-accent', bg: 'bg-accent/10' },
+    'Win': { icon: 'Award', color: 'text-white', bg: 'bg-deep-surface' },
+    'Resource': { icon: 'LinkIcon', color: 'text-white/60', bg: 'bg-white/5' },
+    'General': { icon: 'MessageSquare', color: 'text-white', bg: 'bg-white/5' },
+    'Discussion': { icon: 'MessageSquare', color: 'text-white', bg: 'bg-white/5' }
+};

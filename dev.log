@@ -1,0 +1,298 @@
+
+> opensch@1.0.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.12 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.10.18:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1189ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.8s
+ GET / 200 in 5538ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1094ms
+ GET /dashboard 200 in 1281ms
+ ○ Compiling /feed ...
+ ✓ Compiled /feed in 1005ms
+prisma:error 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].broadcast.findMany()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__0a20a485._.js:457:159
+
+  454 let broadcasts = [];
+  455 let dbThreads = [];
+  456 try {
+→ 457     broadcasts = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].broadcast.findMany(
+Can't reach database server at 127.0.0.1:51214
+Database connection unavailable. Skipping dynamic fetches.
+ GET /feed 200 in 1359ms
+ ○ Compiling /feed/[postId] ...
+ ✓ Compiled /feed/[postId] in 644ms
+prisma:error 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.findUnique()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__8e780734._.js:519:156
+
+  516 let post = null;
+  517 let initialComments = [];
+  518 let Icon = null;
+→ 519 const dbThread = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.findUnique(
+Can't reach database server at 127.0.0.1:51214
+ ⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.findUnique()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__8e780734._.js:519:156
+
+  516 let post = null;
+  517 let initialComments = [];
+  518 let Icon = null;
+→ 519 const dbThread = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.findUnique(
+Can't reach database server at 127.0.0.1:51214
+    at <unknown> (app/(portal)/feed/[postId]/page.tsx:28:40)
+    at <unknown> (Can't reach database server at 127.0.0.1:51214)
+    at async ThreadViewPage (app/(portal)/feed/[postId]/page.tsx:28:20)
+  26 |   let Icon: any = null;
+  27 |
+> 28 |   const dbThread = await prisma.thread.findUnique({
+     |                                        ^
+  29 |     where: { id: postId },
+  30 |     include: {
+  31 |       messages: { {
+  code: 'P1001',
+  meta: [Object],
+  clientVersion: '7.5.0',
+  digest: '2431909353'
+}
+ GET /feed/1 200 in 1606ms
+ GET / 200 in 378ms
+ GET /feed 200 in 488ms
+prisma:error 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.create()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__8e780734._.js:609:165
+
+  606 // Auto-create a thread for this broadcast if it doesn't have one yet
+  607 const rawBroadcast = dbBroadcast;
+  608 if (!rawBroadcast.thread) {
+→ 609     const newThread = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.create({
+            data: {
+              title: "Discussion: GO TO SCHOOL BITCHES",
+              category: "Announcement",
+              Broadcast: {
+              ~~~~~~~~~
+                connect: {
+                  id: "addc5cf1-4920-4c31-8264-07230d5e8854"
+                }
+              },
+          ?   id?: String,
+          ?   targetId?: String | Null,
+          ?   targetType?: String | Null,
+          ?   isResolved?: Boolean,
+          ?   createdAt?: DateTime,
+          ?   updatedAt?: DateTime,
+          ?   upvotes?: Int,
+          ?   messages?: MessageCreateNestedManyWithoutThreadInput,
+          ?   broadcast?: BroadcastCreateNestedOneWithoutThreadInput
+            },
+            include: {
+              messages: {
+                orderBy: {
+                  createdAt: "asc"
+                },
+                include: {
+                  sender: {
+                    include: {
+                      profile: true
+                    }
+                  }
+                }
+              }
+            }
+          })
+
+Unknown argument `Broadcast`. Did you mean `broadcast`? Available options are marked with ?.
+ ⨯ Error [PrismaClientValidationError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.create()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__8e780734._.js:609:165
+
+  606 // Auto-create a thread for this broadcast if it doesn't have one yet
+  607 const rawBroadcast = dbBroadcast;
+  608 if (!rawBroadcast.thread) {
+→ 609     const newThread = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].thread.create({
+            data: {
+              title: "Discussion: GO TO SCHOOL BITCHES",
+              category: "Announcement",
+              Broadcast: {
+              ~~~~~~~~~
+                connect: {
+                  id: "addc5cf1-4920-4c31-8264-07230d5e8854"
+                }
+              },
+          ?   id?: String,
+          ?   targetId?: String | Null,
+          ?   targetType?: String | Null,
+          ?   isResolved?: Boolean,
+          ?   createdAt?: DateTime,
+          ?   updatedAt?: DateTime,
+          ?   upvotes?: Int,
+          ?   messages?: MessageCreateNestedManyWithoutThreadInput,
+          ?   broadcast?: BroadcastCreateNestedOneWithoutThreadInput
+            },
+            include: {
+              messages: {
+                orderBy: {
+                  createdAt: "asc"
+                },
+                include: {
+                  sender: {
+                    include: {
+                      profile: true
+                    }
+                  }
+                }
+              }
+            }
+          })
+
+Unknown argument `Broadcast`. Did you mean `broadcast`? Available options are marked with ?.
+    at <unknown> (app/(portal)/feed/[postId]/page.tsx:103:45)
+    at async ThreadViewPage (app/(portal)/feed/[postId]/page.tsx:103:25)
+  101 |     const rawBroadcast: any = dbBroadcast;
+  102 |     if (!rawBroadcast.thread) {
+> 103 |       const newThread = await prisma.thread.create({
+      |                                             ^
+  104 |         data: {
+  105 |           title: `Discussion: ${dbBroadcast.title}`,
+  106 |           category: 'Announcement', {
+  clientVersion: '7.5.0',
+  digest: '1736644598'
+}
+ GET /feed/addc5cf1-4920-4c31-8264-07230d5e8854 200 in 332ms
+ ✓ Compiled in 172ms
+ ✓ Compiled /feed/[postId] in 44ms
+ GET /feed/addc5cf1-4920-4c31-8264-07230d5e8854 200 in 558ms
+ GET /feed/addc5cf1-4920-4c31-8264-07230d5e8854 200 in 573ms
+ GET /feed 200 in 311ms
+ GET /feed/addc5cf1-4920-4c31-8264-07230d5e8854 200 in 222ms
+ GET /feed 200 in 148ms
+ GET /feed/addc5cf1-4920-4c31-8264-07230d5e8854 200 in 238ms
+ ✓ Compiled in 120ms
+ ✓ Compiled in 120ms
+ ✓ Compiled /feed/[postId] in 55ms
+ GET /feed/addc5cf1-4920-4c31-8264-07230d5e8854 200 in 440ms
+ ✓ Compiled in 158ms
+ GET /feed 200 in 171ms
+ GET /feed/3fe320b1-d574-4c18-846f-605ce30891f1 200 in 391ms
+ GET /feed 200 in 125ms
+ GET / 200 in 416ms
+ GET /dashboard 200 in 244ms
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 630ms
+ GET /admin 200 in 1302ms
+   Reload env: .env
+ GET /feed 200 in 1653ms
+ GET /admin 200 in 1627ms
+ ✓ Compiled in 20ms
+ ✓ Compiled middleware in 400ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled in 170ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2s
+ GET /admin 404 in 24ms
+ GET /feed 404 in 4ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 624ms
+ GET /login 200 in 603ms
+ GET /login 200 in 607ms
+ GET /login 200 in 421ms
+ GET /login 200 in 435ms
+ ✓ Compiled middleware in 2ms
+ GET /login 200 in 271ms
+ GET /login 200 in 284ms
+ GET /login 200 in 180ms
+ GET /login 200 in 173ms
+ ✓ Compiled /login in 38ms
+ GET /login 200 in 222ms
+ GET /login 200 in 224ms
+ ✓ Compiled middleware in 2ms
+ ✓ Compiled in 170ms
+ GET /login 200 in 275ms
+ GET /login 200 in 265ms
+ GET /login 200 in 180ms
+ GET /login 200 in 182ms
+ ✓ Compiled middleware in 7ms
+ ✓ Compiled in 118ms
+ ✓ Compiled middleware in 11ms
+ GET /signup 404 in 6ms
+ GET /login 200 in 262ms
+ ✓ Compiled in 157ms
+ ✓ Compiled in 186ms
+ GET /login 200 in 503ms
+ ✓ Compiled /auth/callback in 399ms
+ GET /auth/callback?error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired&next=%2Fonboarding 307 in 797ms
+ GET /login?error=Invalid_Auth_Callback 200 in 180ms
+ ✓ Compiled in 136ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 147ms
+ ✓ Compiled /onboarding in 451ms
+ GET /onboarding 200 in 622ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/app/(portal)/dashboard/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/app/(portal)/dashboard/page/app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/app/(portal)/dashboard/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/app/(portal)/dashboard/page/app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/app/(marketing)/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/app/(marketing)/page/app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/app/(marketing)/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/app/(marketing)/page/app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/sk/Downloads/OpenSch/.next/server/pages/_app/build-manifest.json'
+}
+[?25h

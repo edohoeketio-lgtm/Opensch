@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ReportModal } from './ReportModal';
 import { useToast } from '../../components/ToastContext';
 
-export function PostFooterActions({ upvotes, hasVoted }: { upvotes: number, hasVoted: boolean }) {
+export function PostFooterActions({ upvotes, hasVoted, repliesCount = 0 }: { upvotes: number, hasVoted: boolean, repliesCount?: number }) {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const { toast } = useToast();
 
@@ -28,7 +28,7 @@ export function PostFooterActions({ upvotes, hasVoted }: { upvotes: number, hasV
         className="flex items-center gap-2 text-sm font-semibold text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors group px-3 py-1.5 rounded-lg hover:bg-white/5"
       >
         <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
-        3 Replies
+        Reply
       </button>
       <button className="flex items-center gap-2 text-sm font-semibold text-[#9CA3AF] hover:text-[#FFFFFF] transition-colors group px-3 py-1.5 rounded-lg hover:bg-white/5">
         <ArrowUpRight className="w-4 h-4 group-hover:scale-110 transition-transform" />

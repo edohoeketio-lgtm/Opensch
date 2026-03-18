@@ -94,19 +94,29 @@ export function CmdKPalette() {
       
       if (!open) return;
 
-      // Navigation & Selection Logic
+      // When in copilot mode, ONLY handle Escape for global events.
+      // Let the input field handle its own native text entry.
+      if (mode === 'copilot') {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          if (entryMode === 'search') {
+             setMode('search');
+             setSearchQuery('');
+          } else {
+             setOpen(false);
+          }
+        }
+        return;
+      }
+
+      // Navigation & Selection Logic (Search Mode Only)
       if (e.key === 'Escape') {
         e.preventDefault();
-        if (mode === 'copilot' && entryMode === 'search') {
-           setMode('search');
-           setSearchQuery('');
-        } else {
-           setOpen(false);
-        }
-      } else if (e.key === 'ArrowDown' && mode === 'search') {
+        setOpen(false);
+      } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex((prev) => (prev + 1) % filteredItems.length);
-      } else if (e.key === 'ArrowUp' && mode === 'search') {
+      } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelectedIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
       }
@@ -144,10 +154,10 @@ export function CmdKPalette() {
     setIsCopilotTyping(true);
 
     try {
-      const response = await fetch('/api/copilot', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, transcript: "OpenSch Intelligence Request" }),
+        body: JSON.stringify({ messages: newMessages }),
       });
 
       if (!response.body) throw new Error("No response body");
@@ -219,7 +229,7 @@ export function CmdKPalette() {
   let globalIndexCounter = 0;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
@@ -228,38 +238,54 @@ export function CmdKPalette() {
       
       {/* Palette Container */}
       <div className={`relative w-full ${mode === 'copilot' ? 'max-w-3xl' : 'max-w-2xl'} bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-all`}>
-        <div className="flex items-center px-4 py-4 border-b border-[#1a1a1a]">
-          {mode === 'copilot' ? (
-             <Zap className="w-5 h-5 text-[#B08D57] mr-3 shrink-0" />
-          ) : (
-             <Search className="w-5 h-5 text-[#8e8e93] mr-3 shrink-0" />
-          )}
-          <input
-            ref={inputRef}
-            autoFocus
-            type="text"
-            className="flex-1 bg-transparent !border-0 !outline-none !ring-0 focus:!ring-0 focus:!outline-none focus:!border-transparent active:outline-none text-white text-[15px] placeholder-[#3c3c3e]"
-            placeholder={mode === 'copilot' ? "Ask OpenSch Intelligence anything..." : "Type a command or search..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isCopilotTyping}
-          />
-          {mode === 'copilot' && (
-             <div className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[9px] font-semibold tracking-wider text-[#8e8e93] uppercase shrink-0">OpenSch Intelligence</div>
-          )}
-        </div>
+        {mode === 'search' && (
+          <div className="flex items-center px-4 py-4 border-b border-[#1a1a1a]">
+            <Search className="w-5 h-5 text-[#8e8e93] mr-3 shrink-0" />
+            <input
+              ref={inputRef}
+              autoFocus
+              type="text"
+              className="flex-1 bg-transparent border-0 outline-none ring-0 placeholder-[#5c5c5e] text-white text-[15px] focus:ring-0 focus:outline-none focus:border-transparent focus:shadow-none bg-none shadow-none focus-visible:outline-none focus-visible:ring-0"
+              style={{ boxShadow: 'none', outline: 'none', borderColor: 'transparent', WebkitBoxShadow: 'none' }}
+              placeholder="Type a command or search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isCopilotTyping}
+            />
+          </div>
+        )}
         
-        <div ref={listRef} className={`overflow-y-auto p-2 ${mode === 'copilot' ? 'max-h-[65vh] min-h-[40vh] p-4 flex flex-col gap-5' : 'max-h-[60vh]'}`}>
+        {mode === 'copilot' && (
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a1a1a] bg-[#111111]/50">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#B08D57]" />
+              <span className="text-[13px] font-semibold text-white tracking-wide">OpenSch Intelligence</span>
+            </div>
+            {entryMode === 'search' && (
+              <button 
+                onClick={() => { setMode('search'); setSearchQuery(''); }}
+                className="text-[11px] font-medium text-[#8e8e93] hover:text-white px-2 py-1 rounded bg-white/5 border border-white/10 transition-colors"
+              >
+                Back to Search
+              </button>
+            )}
+          </div>
+        )}
+        
+        <div ref={listRef} className={`overflow-y-auto p-2 ${mode === 'copilot' ? 'max-h-[55vh] min-h-[35vh] p-4 flex flex-col gap-5' : 'max-h-[60vh]'}`}>
           
           {mode === 'copilot' ? (
              messages.length === 0 ? (
-                <div className="py-20 flex flex-col items-center justify-center text-center h-full my-auto">
-                   <div className="w-14 h-14 rounded-full bg-[#111111] border border-[#2D2D2D] flex items-center justify-center mb-5">
+                <div className="py-20 flex flex-col items-center justify-center text-center h-full my-auto relative overflow-hidden">
+                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                     <div className="w-[200px] h-[200px] bg-[#B08D57] blur-[100px] rounded-full"></div>
+                   </div>
+                   <div className="w-14 h-14 rounded-full bg-[#111111] border border-[#2D2D2D] flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(176,141,87,0.15)] relative z-10">
                       <Zap className="w-6 h-6 text-[#B08D57]" />
                    </div>
-                   <h3 className="text-lg font-semibold text-[#FFFFFF] tracking-tight mb-2">OpenSch Intelligence</h3>
-                   <p className="text-[14px] text-[#8e8e93] max-w-sm leading-relaxed">Ask me anything about the curriculum, debug an issue, or request code examples directly from here.</p>
+                   <h3 className="text-lg font-semibold text-[#FFFFFF] tracking-tight mb-2 relative z-10">OpenSch Intelligence</h3>
+                   <p className="text-[14px] text-[#8e8e93] max-w-sm leading-relaxed relative z-10">Ask me anything about the curriculum, debug an issue, or request code examples directly from here.</p>
                 </div>
              ) : (
                 <>
@@ -270,11 +296,11 @@ export function CmdKPalette() {
                         <Zap className="w-3.5 h-3.5" />
                       </div>
                     )}
-                    <div className={`text-[14px] leading-relaxed ${msg.role === 'user' ? 'px-4 py-2.5 rounded-2xl bg-[#2D2D2D] text-[#FFFFFF]' : 'bg-transparent text-[#D1D5DB] pt-1.5'} max-w-[85%]`}>
+                    <div className={`text-[14px] leading-relaxed ${msg.role === 'user' ? 'px-4 py-2.5 rounded-2xl bg-[#2D2D2D] text-[#FFFFFF]' : 'bg-transparent text-white/90 pt-1.5'} max-w-[85%]`}>
                       {msg.role === 'user' ? (
                          msg.content
                       ) : (
-                         <div className="prose prose-invert prose-p:leading-relaxed max-w-none text-[14px]">
+                         <div className="text-[14px] text-white/90 leading-relaxed [&_p]:text-white/90 [&_p]:mb-3 last:[&_p]:mb-0 [&_strong]:text-white [&_strong]:font-semibold [&_code]:text-[#B08D57] [&_code]:bg-[#B08D57]/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-md">
                             {!msg.content && isCopilotTyping && idx === messages.length - 1 ? (
                                <span className="animate-pulse flex items-center gap-1 mt-1"><span className="w-1.5 h-1.5 bg-[#B08D57] rounded-full"></span><span className="w-1.5 h-1.5 bg-[#B08D57] rounded-full animation-delay-150"></span><span className="w-1.5 h-1.5 bg-[#B08D57] rounded-full animation-delay-300"></span></span>
                             ) : (
@@ -289,8 +315,22 @@ export function CmdKPalette() {
              )
           ) : (
             filteredItems.length === 0 ? (
-               <div className="py-14 text-center text-[#8e8e93] text-[14px]">
-                  No results found for "<span className="text-white">{searchQuery}</span>"
+               <div className="py-16 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4">
+                     <Search className="w-5 h-5 text-[#8e8e93]" />
+                  </div>
+                  <h3 className="text-[16px] font-semibold text-[#FFFFFF] tracking-tight mb-1">No results found</h3>
+                  <p className="text-[13px] text-[#8e8e93] mb-6">We couldn&apos;t find anything matching &quot;<span className="text-white">{searchQuery}</span>&quot;</p>
+                  
+                  <button 
+                    onClick={() => {
+                      setMode('copilot');
+                    }}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#111111] border border-[#2D2D2D] hover:bg-[#1a1a1a] hover:border-[#B08D57]/30 transition-all text-[13px] font-medium text-[#D1D5DB] group shadow-sm"
+                  >
+                    <Zap className="w-4 h-4 text-[#B08D57] group-hover:drop-shadow-[0_0_8px_rgba(176,141,87,0.5)] transition-all" />
+                    Ask Intelligence instead
+                  </button>
                </div>
             ) : (
               Object.entries(groupedItems).map(([category, items]) => (
@@ -333,6 +373,33 @@ export function CmdKPalette() {
             )
           )}
         </div>
+        
+        {/* Copilot Input Area */}
+        {mode === 'copilot' && (
+          <div className="p-4 border-t border-[#1a1a1a] bg-[#0a0a0a]">
+            <div className="relative flex items-center bg-[#111111] border border-[#2D2D2D] rounded-xl overflow-hidden p-1 shadow-none focus-within:ring-0 focus-within:border-[#2D2D2D]">
+              <input
+                ref={inputRef}
+                autoFocus
+                type="text"
+                className="flex-1 bg-transparent border-0 outline-none ring-0 placeholder-[#5c5c5e] text-white text-[14px] px-3 py-2 focus:ring-0 focus:outline-none focus:border-transparent focus:shadow-none bg-none shadow-none focus-visible:outline-none focus-visible:ring-0"
+                style={{ boxShadow: 'none', outline: 'none', borderColor: 'transparent', WebkitBoxShadow: 'none' }}
+                placeholder="Ask OpenSch Intelligence anything..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isCopilotTyping}
+              />
+              <button
+                onClick={handleChatSubmit}
+                disabled={!searchQuery.trim() || isCopilotTyping}
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors mr-1 disabled:opacity-50 disabled:cursor-not-allowed bg-[#B08D57] hover:bg-[#C9A96E] text-[#111111]"
+              >
+                <ChevronRight className="w-4 h-4 ml-0.5" strokeWidth={3} />
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Footer */}
         <div className="bg-[#050505] border-t border-[#1a1a1a] p-3 flex items-center justify-between px-5 text-xs text-[#8e8e93]">

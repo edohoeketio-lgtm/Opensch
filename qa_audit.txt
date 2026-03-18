@@ -1,0 +1,160 @@
+--- QA AUDIT LOG ---
+Testing: /
+** Console Errors:**
+(no console errors)
+** Links:**
+OpenSch → http://localhost:3000/
+Home → http://localhost:3000/
+Curriculum → http://localhost:3000/syllabus
+Pricing → http://localhost:3000/pricing
+FAQ → http://localhost:3000/faq
+About → http://localhost:3000/about
+Portal Login → http://localhost:3000/login
+Apply → http://localhost:3000/apply
+Apply for the next cohort → http://localhost:3000/apply
+View curriculum → http://localhost:3000/syllabus
+See full curriculum → http://localhost:3000/syllabus
+Compare plans in detail → http://localhost:3000/pricing
+Apply for the next cohort → http://localhost:3000/apply
+Connect on LinkedIn → https://www.linkedin.com/in/iedohoeket/
+Connect on LinkedIn → https://linkedin.com/
+Connect on LinkedIn → https://linkedin.com/
+See all questions → http://localhost:3000/faq
+Apply for the next cohort → http://localhost:3000/apply
+OpenSch → http://localhost:3000/
+Home → http://localhost:3000/
+Curriculum → http://localhost:3000/syllabus
+Pricing → http://localhost:3000/pricing
+FAQ → http://localhost:3000/faq
+About → http://localhost:3000/about
+Apply → http://localhost:3000/apply
+Student Dashboard → http://localhost:3000/dashboard
+Contact → mailto:hello@opensch.com
+Terms of Service → http://localhost:3000/#
+Privacy Policy → http://localhost:3000/#
+Testing: /dashboard
+** Console Errors:**
+(no console errors)
+** Links:**
+Overview → http://localhost:3000/dashboard
+Curriculum → http://localhost:3000/curriculum
+Campus Feed → http://localhost:3000/feed
+My Portfolio → http://localhost:3000/portfolio
+Maurice E.Premium → http://localhost:3000/settings
+Sprint 03 12 mins leftHooking Up Authentication FlowsMaster backend connections by generating and implementing robust au → http://localhost:3000/course/ai-product-builder/module/3/lesson/8
+PendingSprint 3 DeliverableSubmit your Full-Stack MVP repository link.Checkpoint: FridayCommit Deliverable → http://localhost:3000/course/ai-product-builder/module/3/lesson/3
+TomorrowOffice HoursLive Q&A covering Database Hookups and Premium UI Polish.4:00 PM ESTAdd to Calendar → https://calendar.google.com/calendar/render?action=TEMPLATE&text=Office+Hours&dates=20260430T200000Z/20260430T210000Z&details=Live+Q%26A+covering+Database+Hookups+and+Premium+UI+Polish.
+Testing: /admin
+** Console Errors:**
+(no console errors)
+** Links:**
+Command Center → http://localhost:3000/admin
+Course Builder → http://localhost:3000/admin/curriculum
+Review Queue → http://localhost:3000/admin/reviews
+Student Roster → http://localhost:3000/admin/roster
+Broadcasts → http://localhost:3000/admin/broadcasts
+ADReturn to PortalExit Admin → http://localhost:3000/dashboard
+Testing: /admin/analytics
+** Console Errors:**
+(no console errors)
+** Links:**
+Terms of Service → http://localhost:3000/login#
+Privacy Policy → http://localhost:3000/login#
+Testing: /admin/curriculum
+** Console Errors:**
+(no console errors)
+** Links:**
+Command Center → http://localhost:3000/admin
+Course Builder → http://localhost:3000/admin/curriculum
+Review Queue → http://localhost:3000/admin/reviews
+Student Roster → http://localhost:3000/admin/roster
+Broadcasts → http://localhost:3000/admin/broadcasts
+ADReturn to PortalExit Admin → http://localhost:3000/dashboard
+Testing: /settings
+** Console Errors:**
+(no console errors)
+** Links:**
+Overview → http://localhost:3000/dashboard
+Curriculum → http://localhost:3000/curriculum
+Campus Feed → http://localhost:3000/feed
+My Portfolio → http://localhost:3000/portfolio
+Maurice E.Premium → http://localhost:3000/settings
+Profile → http://localhost:3000/settings
+Notifications → http://localhost:3000/settings/notifications
+Testing: /feed
+** Console Errors:**
+[2026-03-18T00:50:08.761Z] [error] Failed to load resource: net::ERR_FILE_NOT_FOUND
+** Links:**
+Overview → http://localhost:3000/dashboard
+Curriculum → http://localhost:3000/curriculum
+Campus Feed → http://localhost:3000/feed
+My Portfolio → http://localhost:3000/portfolio
+Maurice E.Premium → http://localhost:3000/settings
+GO TO SCHOOL BITCHESHello There, I think you need to be in school. → http://localhost:3000/feed/addc5cf1-4920-4c31-8264-07230d5e8854
+0 Replies → http://localhost:3000/feed/addc5cf1-4920-4c31-8264-07230d5e8854
+Helllo what are you guys up to? → http://localhost:3000/feed/3fe320b1-d574-4c18-846f-605ce30891f1
+0 Replies → http://localhost:3000/feed/3fe320b1-d574-4c18-846f-605ce30891f1
+Sup? → http://localhost:3000/feed/7c3285a5-e040-4600-84c0-0485fc7a5601
+1 Reply → http://localhost:3000/feed/7c3285a5-e040-4600-84c0-0485fc7a5601
+Rigorous QA Evaluation Post - Testing React State Reactivity → http://localhost:3000/feed/e2b4ff46-ceab-405f-b51c-f8f99c6a310d
+0 Replies → http://localhost:3000/feed/e2b4ff46-ceab-405f-b51c-f8f99c6a310d
+Idk BroWho's who?WHOwho0 votes · Poll Open → http://localhost:3000/feed/4bd65a82-8130-4528-8afe-9b90985036bd
+0 Replies → http://localhost:3000/feed/4bd65a82-8130-4528-8afe-9b90985036bd
+This is an automated QA test post confirming the Prisma schema and database connection are working dynamically! 🚀 → http://localhost:3000/feed/113931ac-7443-4277-9925-a000e3b5ed98
+0 Replies → http://localhost:3000/feed/113931ac-7443-4277-9925-a000e3b5ed98
+This is an automated QA test post confirming the Prisma schema and database connection are working dynamically! 🚀 → http://localhost:3000/feed/098cee92-f035-4fe1-bcb3-3a30bf56cb16
+0 Replies → http://localhost:3000/feed/098cee92-f035-4fe1-bcb3-3a30bf56cb16
+Faculty Note: Sprint 3 DeliverablesA quick reminder that the 'Hooking up Authentication Flows' deliverable is due tomorr → http://localhost:3000/feed/1
+4 Replies → http://localhost:3000/feed/1
+Deliverable: Implementing OAuth ProvidersJust submitted my sprint deliverable. The GitHub integration took some troubles → http://localhost:3000/feed/2
+3 Replies → http://localhost:3000/feed/2
+Supabase Row Level Security (RLS) policies giving 403sHas anyone run into an issue where standard authenticated users ar → http://localhost:3000/feed/3
+6 Replies → http://localhost:3000/feed/3
+Review Request: OAuth Edge Function LogicBefore I submit my final deliverable, could someone peer review my token handli → http://localhost:3000/feed/5
+1 Reply → http://localhost:3000/feed/5
+Guide: Vercel AI SDK vs LangChainFound this incredible deep-dive article comparing the Vercel AI SDK to LangChain for bu → http://localhost:3000/feed/6
+2 Replies → http://localhost:3000/feed/6
+Mastered: Academic OS Dashboard V1Finally shipped the dashboard logic! The Framer Motion animations took a lot of finess → http://localhost:3000/feed/7
+8 Replies → http://localhost:3000/feed/7
+Testing: /portfolio
+** Console Errors:**
+[2026-03-18T00:50:08.761Z] [error] Failed to load resource: net::ERR_FILE_NOT_FOUND
+** Links:**
+Overview → http://localhost:3000/dashboard
+Curriculum → http://localhost:3000/curriculum
+Campus Feed → http://localhost:3000/feed
+My Portfolio → http://localhost:3000/portfolio
+Maurice E.Premium → http://localhost:3000/settings
+Sprint Context → http://localhost:3000/course/3/module/301/lesson/3011
+Testing: /login
+** Console Errors:**
+[2026-03-18T00:50:08.761Z] [error] Failed to load resource: net::ERR_FILE_NOT_FOUND
+** Links:**
+Terms of Service → http://localhost:3000/login#
+Privacy Policy → http://localhost:3000/login#
+Testing: /pricing
+** Console Errors:**
+[2026-03-18T00:50:08.761Z] [error] Failed to load resource: net::ERR_FILE_NOT_FOUND
+** Links:**
+OpenSch → http://localhost:3000/
+Home → http://localhost:3000/
+Curriculum → http://localhost:3000/syllabus
+Pricing → http://localhost:3000/pricing
+FAQ → http://localhost:3000/faq
+About → http://localhost:3000/about
+Portal Login → http://localhost:3000/login
+Apply → http://localhost:3000/apply
+Apply — Basic → http://localhost:3000/apply
+Apply — Premium → http://localhost:3000/apply
+Apply for the next cohort → http://localhost:3000/apply
+OpenSch → http://localhost:3000/
+Home → http://localhost:3000/
+Curriculum → http://localhost:3000/syllabus
+Pricing → http://localhost:3000/pricing
+FAQ → http://localhost:3000/faq
+About → http://localhost:3000/about
+Apply → http://localhost:3000/apply
+Student Dashboard → http://localhost:3000/dashboard
+Contact → mailto:hello@opensch.com
+Terms of Service → http://localhost:3000/pricing#
+Privacy Policy → http://localhost:3000/pricing#

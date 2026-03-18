@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Play, Maximize2, X, FileText, Bot, MessageSquare, Loader2, User, ChevronLeft, Video } from 'lucide-react';
+import { Play, Maximize2, X, FileText, Bot, MessageSquare, Loader2, User, ChevronLeft, Video, Settings } from 'lucide-react';
 import { DeliverableSubmissionFeature } from './DeliverableSubmissionFeature';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -43,7 +43,6 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
 
   useEffect(() => {
     setMounted(true);
-    // Fetch the real, dynamically generated transcript if it exists
     fetch('/latest-transcript.json')
       .then(res => res.json())
       .then(data => {
@@ -74,8 +73,7 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
         },
         body: JSON.stringify({
            videoId: lessonId,
-           maxWatchedSeconds: Math.floor(maxWatchedSeconds),
-           userId: "fallback-student-uuid" // Simulated auth context
+           maxWatchedSeconds: Math.floor(maxWatchedSeconds)
         })
       });
     } catch (e) {
@@ -315,31 +313,43 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
               className="w-full h-full outline-none bg-black"
               preload="metadata"
             >
-              <source src="/Lesson Video/What is Pedagogy _ 4 Essential Learning Theories _ Satchel_1080p.mp4" type="video/mp4" />
+              <source src="/Lesson Video/An Illustrated Guide to OAuth and OpenID Connect.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 
             {/* Floating Speed Control Panel */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover/video:opacity-100 transition-opacity duration-300 z-10 flex gap-1 bg-[#111111]/80 backdrop-blur-md border border-[#2D2D2D] p-1 rounded-xl shadow-lg">
-              {[1, 1.5, 2].map((speed) => (
-                <button
-                  key={speed}
-                  onClick={() => {
-                    if (videoRef.current) {
-                      videoRef.current.playbackRate = speed;
-                      setPlaybackRate(speed);
-                    }
-                  }}
-                  className={`px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-colors ${
-                    playbackRate === speed 
-                      ? 'bg-white text-black' 
-                      : 'text-white hover:bg-white/10'
-                  }`}
-                  title={`Set speed to ${speed}x`}
-                >
-                  {speed}x
-                </button>
-              ))}
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+              <div className="group/speed relative flex items-center justify-end">
+                {/* Invisible hover bridge container */}
+                <div className="absolute right-full pr-2 top-1/2 -translate-y-1/2 flex items-center opacity-0 -translate-x-2 group-hover/speed:opacity-100 group-hover/speed:translate-x-0 transition-all duration-300 pointer-events-none group-hover/speed:pointer-events-auto z-20">
+                  <div className="flex items-center gap-1 bg-[#111111]/90 backdrop-blur-xl border border-[#2D2D2D]/60 p-1.5 rounded-xl shadow-2xl shadow-black/50">
+                    {[1, 1.25, 1.5, 2].map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => {
+                          if (videoRef.current) {
+                            videoRef.current.playbackRate = speed;
+                            setPlaybackRate(speed);
+                          }
+                        }}
+                        className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap ${
+                          playbackRate === speed 
+                            ? 'bg-white text-black shadow-sm' 
+                            : 'text-[#9CA3AF] hover:bg-white/10 hover:text-white'
+                        }`}
+                        title={`Set speed to ${speed}x`}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="w-10 h-10 rounded-xl bg-[#111111]/90 backdrop-blur-xl border border-[#2D2D2D]/60 flex items-center justify-center cursor-default shadow-lg text-[#FFFFFF] opacity-0 group-hover/video:opacity-100 transition-opacity duration-300 z-10">
+                   <Settings className="w-4 h-4 text-[#9CA3AF] group-hover/speed:text-white transition-colors group-hover/speed:rotate-90 duration-500" />
+                   <span className="absolute -bottom-1 -right-1 bg-[#B08D57] text-black text-[9px] font-bold px-1 rounded-sm shadow-sm leading-tight">{playbackRate}x</span>
+                </div>
+              </div>
             </div>
           </motion.div>
 

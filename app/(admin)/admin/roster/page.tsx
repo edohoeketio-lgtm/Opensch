@@ -11,7 +11,12 @@ export default async function RosterPage() {
       where: { role: 'STUDENT' },
       include: {
         profile: true,
-        enrollments: true
+        enrollments: true,
+        cohort: true,
+        interventionsAsStudent: {
+          where: { status: 'OPEN' },
+          orderBy: { createdAt: 'desc' }
+        }
       }
     });
 
@@ -21,13 +26,14 @@ export default async function RosterPage() {
         
         return {
           id: user.id,
-          name: user.profile?.isPublic ? (user.email.split('@')[0] || 'Unknown Student') : (user.email.split('@')[0] || 'Private Student'),
+          name: user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName}` : (user.email.split('@')[0] || 'Unknown Student'),
           email: user.email,
-          cohort: 'Spring 25', // Should map to Course title dynamically
+          cohort: user.cohort?.name || 'Unassigned',
           progress: enrollment ? enrollment.cachedProgress : 0,
-          risk: enrollment ? (enrollment.riskStatus as any) : 'medium',
+          risk: (user.interventionsAsStudent && user.interventionsAsStudent.length > 0) ? 'high' : (enrollment ? (enrollment.riskStatus as any) : 'medium'),
           lastActive: enrollment ? new Date(enrollment.lastActiveAt).toLocaleDateString() : 'Unknown',
-          avatar: user.email.substring(0, 2).toUpperCase()
+          avatar: user.email.substring(0, 2).toUpperCase(),
+          interventions: user.interventionsAsStudent || []
         };
       });
     } else {

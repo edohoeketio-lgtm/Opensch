@@ -56,7 +56,7 @@ export default function PortalLayout({
       <div className="flex-1 flex flex-col min-w-0 bg-[#111111]">
         
         {/* Top Utility Bar */}
-        <header className="h-16 border-b border-[#2D2D2D] flex items-center justify-between px-8 shrink-0 bg-[#111111]/80 backdrop-blur-md z-10 sticky top-0">
+        <header className="h-16 border-b border-[#2D2D2D] flex items-center justify-between px-8 shrink-0 bg-[#111111]/80 backdrop-blur-md z-50 sticky top-0">
           <div className="flex items-center gap-3">
             <span className="px-2 py-1 rounded bg-[#1C1C1E] border border-[#2D2D2D] text-[10px] font-semibold tracking-[0.2em] uppercase text-[#FFFFFF]">FS·C3</span>
             <span className="text-sm font-medium text-[#FFFFFF]">AI-Native Product Builder Cohort</span>
@@ -125,7 +125,7 @@ export default function PortalLayout({
                          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
                            <Bell className="w-4 h-4 text-[#555555]" />
                          </div>
-                         <p className="text-[13px] text-[#888888]">You're all caught up.</p>
+                         <p className="text-[13px] text-[#888888]">You&apos;re all caught up.</p>
                        </div>
                      )}
                    </div>

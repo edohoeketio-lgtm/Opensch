@@ -1,17 +1,228 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// -----------------------------------------------------------------------------
-// ENUMS
-// -----------------------------------------------------------------------------
+model User {
+  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String          @unique
+  role              Role            @default(STUDENT)
+  stripeCustomerId  String?         @unique
+  cohortId          String?         @db.Uuid
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  lastLogin         DateTime?
+  isAdmin           Boolean         @default(false)
+  broadcasts        Broadcast[]
+  coursesInstructed Course[]        @relation("CourseInstructor")
+  enrollments       Enrollment[]
+  messagesSent      Message[]
+  profile           Profile?
+  progressStates    ProgressState[]
+  submissions       Submission[]
+  copilotSessions   CopilotSession[]
+  cohort            Cohort?         @relation("UserCohort", fields: [cohortId], references: [id])
+  interventionsAsStudent    InterventionLog[] @relation("StudentInterventions")
+  interventionsAsInstructor InterventionLog[] @relation("InstructorInterventions")
+  applicationsReviewed      Application[]     @relation("ApplicationReviewer")
+  hostedEvents              Event[]           @relation("EventHost")
+  eventRSVPs                EventRSVP[]
+}
+
+model Profile {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @unique @db.Uuid
+  fullName        String?
+  username        String?  @unique
+  timezone        String?
+  experienceLevel String?
+  avatarUrl       String?
+  githubHandle    String?
+  linkedinUrl   String?
+  bio           String?
+  motivation    String?
+  activeBadgeId String?
+  isPublic      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Course {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  description  String
+  slug         String       @unique
+  thumbnailUrl String?
+  isPublished  Boolean      @default(false)
+  instructorId String       @db.Uuid
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
+  enrollments  Enrollment[]
+  modules      Module[]
+  @@index([instructorId])
+}
+
+model Enrollment {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String   @db.Uuid
+  courseId       String   @db.Uuid
+  isActive       Boolean  @default(true)
+  cachedProgress Int      @default(0)
+  riskStatus     String   @default("low")
+  lastActiveAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+}
+
+model Module {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId    String   @db.Uuid
+  title       String
+  description String?
+  order       Int
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lessons     Lesson[]
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@index([courseId])
+}
+
+model Lesson {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  moduleId            String          @db.Uuid
+  title               String
+  description         String?
+  order               Int
+  muxPlaybackId       String?
+  isPreview           Boolean         @default(false)
+  isPublished         Boolean         @default(false)
+  transcriptRawText   String?
+  transcriptCleanText String?
+  transcriptSegments  Json?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  assignments         Assignment[]
+  module              Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progressStates      ProgressState[]
+  @@index([moduleId])
+}
+
+model ProgressState {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String   @db.Uuid
+  lessonId          String   @db.Uuid
+  watchedSeconds    Int      @default(0)
+  maxWatchedSeconds Int      @default(0)
+  isCompleted       Boolean  @default(false)
+  lastWatchedAt     DateTime @default(now())
+  lesson            Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model Assignment {
+  id                      String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lessonId                String       @db.Uuid
+  prompt                  String
+  hiddenIdealAnswerRubric String
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  lesson                  Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  submissions             Submission[]
+  @@index([lessonId])
+}
+
+model Submission {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assignmentId      String           @db.Uuid
+  studentId         String           @db.Uuid
+  contentUrlOrCode  String
+  score             Int?
+  aiScore           Int?
+  aiConfidenceScore Int?
+  aiRationale       String?
+  aiPrimaryEntrypoints Json?
+  feedback          String?
+  reviewerId        String?          @db.Uuid
+  status            SubmissionStatus @default(PENDING)
+  submittedAt       DateTime         @default(now())
+  aiDraftedAt       DateTime?
+  claimedAt         DateTime?
+  gradedAt          DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  assignment        Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student           User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@index([assignmentId])
+  @@index([studentId])
+  @@index([status])
+}
+
+model Thread {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  targetId   String?    @db.Uuid
+  targetType String?
+  title      String
+  isResolved Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  category   String     @default("General")
+  upvotes    Int        @default(0)
+  messages   Message[]
+  broadcast  Broadcast?
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model Message {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  threadId           String   @db.Uuid
+  senderId           String   @db.Uuid
+  content            String
+  isAiGenerated      Boolean  @default(false)
+  upvotes            Int      @default(0)
+  isInstructorAnswer Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  payload            Json?
+  sender             User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  thread             Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  @@index([threadId])
+  @@index([senderId])
+}
+
+model Broadcast {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title          String
+  content        String
+  targetAudience String          @default("all")
+  authorId       String          @db.Uuid
+  status         BroadcastStatus @default(DRAFT)
+  scheduledFor   DateTime?
+  isPublished    Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  threadId       String?         @unique @db.Uuid
+  thread         Thread?         @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  @@index([authorId])
+  @@index([status])
+}
+
 enum Role {
   STUDENT
   INSTRUCTOR
@@ -20,204 +231,166 @@ enum Role {
 
 enum SubmissionStatus {
   PENDING
-  AUTO_PASSED
-  NEEDS_REVIEW
+  AI_DRAFTED
+  IN_REVIEW
+  PASSED
+  REVISIONS_REQUESTED
+  ESCALATED
+}
+
+model CopilotSession {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String           @db.Uuid
+  title     String           @default("New Conversation")
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  CopilotMessage[]
+}
+
+model CopilotMessage {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId String         @db.Uuid
+  role      String         // 'user', 'assistant', 'system'
+  content   String
+  createdAt DateTime       @default(now())
+  session   CopilotSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@index([sessionId])
+}
+
+model Cohort {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  description    String?
+  startDate      DateTime
+  endDate        DateTime?
+  status         CohortStatus @default(UPCOMING)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  
+  users          User[]       @relation("UserCohort")
+  events         Event[]
+}
+
+model InterventionLog {
+  id              String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId       String             @db.Uuid
+  instructorId    String             @db.Uuid
+  reason          String
+  actionTaken     String?
+  status          InterventionStatus @default(OPEN)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  student         User               @relation("StudentInterventions", fields: [studentId], references: [id], onDelete: Cascade)
+  instructor      User               @relation("InstructorInterventions", fields: [instructorId], references: [id], onDelete: Cascade)
+  
+  @@index([studentId])
+  @@index([status])
+}
+
+enum CohortStatus {
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum InterventionStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+model Application {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName       String
+  lastName        String
+  email           String            @unique
+  linkedinUrl     String?
+  experience      String?           
+  motivation      String?           
+  status          ApplicationStatus @default(NEW)
+  paymentStatus   PaymentStatus     @default(UNPAID)
+  paystackRef     String?           @unique
+  appliedAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  reviewerId      String?           @db.Uuid
+  reviewer        User?             @relation("ApplicationReviewer", fields: [reviewerId], references: [id])
+  
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+enum ApplicationStatus {
+  NEW
+  REVIEWING
+  INTERVIEWED
+  ACCEPTED
   REJECTED
+  ENROLLED
 }
 
-// -----------------------------------------------------------------------------
-// MODELS
-// -----------------------------------------------------------------------------
-
-model User {
-  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email              String   @unique
-  role               Role     @default(STUDENT)
-  stripeCustomerId   String?  @unique
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  profile            Profile?
-  enrollments        Enrollment[]
-  progressStates     ProgressState[]
-  submissions        Submission[]
-  messagesSent       Message[]
-  
-  // For instructors only
-  coursesInstructed  Course[] @relation("CourseInstructor")
+enum PaymentStatus {
+  UNPAID
+  DEPOSIT_PAID
+  FULLY_PAID
 }
 
-model Profile {
-  id             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String  @unique @db.Uuid
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  avatarUrl      String?
-  githubHandle   String?
-  linkedinUrl    String?
-  bio            String?
-  motivation     String? // e.g., "Get Hired", "Build a Startup"
-  activeBadgeId  String?
-  isPublic       Boolean @default(false)
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-model Course {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title        String
-  description  String
-  slug         String   @unique
-  thumbnailUrl String?
-  isPublished  Boolean  @default(false)
-  
-  instructorId String   @db.Uuid
-  instructor   User     @relation("CourseInstructor", fields: [instructorId], references: [id])
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  modules      Module[]
-  enrollments  Enrollment[]
-}
-
-model Enrollment {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId     String   @db.Uuid
-  courseId   String   @db.Uuid
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  isActive   Boolean  @default(true)
-  
-  // Cached telemetry to prevent N+1 aggregations in Admin Roster CRM
-  cachedProgress Int      @default(0)
-  riskStatus     String   @default("low") // low, medium, high
-  lastActiveAt   DateTime @default(now())
-  
-  createdAt  DateTime @default(now())
-
-  @@unique([userId, courseId])
-}
-
-model Module {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  courseId    String   @db.Uuid
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
+model Event {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   description String?
-  order       Int
-  isPublished Boolean  @default(false)
+  startTime   DateTime
+  endTime     DateTime
+  link        String?      // Zoom/Meet limit
+  type        EventType    @default(OFFICE_HOURS)
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  lessons     Lesson[]
+  cohortId    String?      @db.Uuid
+  cohort      Cohort?      @relation(fields: [cohortId], references: [id])
+  
+  hostId      String       @db.Uuid
+  host        User         @relation("EventHost", fields: [hostId], references: [id])
+  
+  rsvps       EventRSVP[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  @@index([cohortId])
+  @@index([hostId])
 }
 
-model Lesson {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  moduleId       String   @db.Uuid
-  module         Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  
-  title          String
-  description    String?
-  order          Int
-  muxPlaybackId  String?
-  isPreview      Boolean  @default(false)
-  isPublished    Boolean  @default(false)
-  
-  // AI Transcription Data
-  transcriptRawText   String?
-  transcriptCleanText String?
-  transcriptSegments  Json?
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+model EventRSVP {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String       @db.Uuid
+  user        User         @relation(fields: [userId], references: [id])
+  eventId     String       @db.Uuid
+  event       Event        @relation(fields: [eventId], references: [id])
+  status      RSVPStatus   @default(ATTENDING)
+  createdAt   DateTime     @default(now())
 
-  progressStates ProgressState[]
-  assignments    Assignment[]
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
 }
 
-model ProgressState {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String   @db.Uuid
-  lessonId       String   @db.Uuid
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson         Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
-  watchedSeconds     Int      @default(0)
-  maxWatchedSeconds  Int      @default(0)
-  isCompleted        Boolean  @default(false)
-  lastWatchedAt      DateTime @default(now())
-
-  @@unique([userId, lessonId])
+enum EventType {
+  OFFICE_HOURS
+  DEMO_DAY
+  LIVE_LECTURE
+  SOCIAL
 }
 
-// -----------------------------------------------------------------------------
-// ASSESSMENT & AI GRADING
-// -----------------------------------------------------------------------------
-
-model Assignment {
-  id                       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  lessonId                 String   @db.Uuid
-  lesson                   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
-  prompt                   String
-  hiddenIdealAnswerRubric  String   // Hidden from students, used by LLM grader
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-
-  submissions              Submission[]
-}
-
-model Submission {
-  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  assignmentId       String   @db.Uuid
-  studentId          String   @db.Uuid
-  assignment         Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student            User       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
-  contentUrlOrCode   String
-  aiConfidenceScore  Int?
-  aiRationale        String?    // Feedback from the LLM grader
-  status             SubmissionStatus @default(PENDING)
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-}
-
-// -----------------------------------------------------------------------------
-// COMMUNITY & COMMUNICATION
-// -----------------------------------------------------------------------------
-
-model Thread {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  // Can be tied to a lesson, or generic for the "Campus"
-  targetId    String?   @db.Uuid // Polymorphic ID (e.g. lessonId)
-  targetType  String?   // E.g. "LESSON" or "CAMPUS"
-  
-  title       String
-  isResolved  Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  messages    Message[]
-}
-
-model Message {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  threadId       String   @db.Uuid
-  senderId       String   @db.Uuid // The Student or Instructor, OR the AI system
-  thread         Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  sender         User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
-  
-  content        String
-  isAiGenerated  Boolean  @default(false)
-  upvotes        Int      @default(0)
-  isInstructorAnswer Boolean @default(false) // Tag to highlight official answers
-  
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+enum RSVPStatus {
+  ATTENDING
+  MAYBE
+  DECLINED
 }

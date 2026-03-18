@@ -44,20 +44,23 @@ export default function ProfileSettingsPage() {
         <form className="space-y-6 max-w-2xl">
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#9CA3AF]">First Name</label>
+              <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#9CA3AF]">Full Name</label>
               <input 
                 type="text" 
-                defaultValue="Maurice"
+                defaultValue="Maurice Edohoeket"
                 className="w-full bg-[#1C1C1E] border border-transparent focus:border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-[#FFFFFF] placeholder:text-[#504C46] outline-none transition-all focus:bg-[#1A1A1E]" 
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#9CA3AF]">Last Name</label>
-              <input 
-                type="text" 
-                defaultValue="E."
-                className="w-full bg-[#1C1C1E] border border-transparent focus:border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-[#FFFFFF] placeholder:text-[#504C46] outline-none transition-all focus:bg-[#1A1A1E]" 
-              />
+              <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#9CA3AF]">Username</label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-[#504C46] font-medium">@</span>
+                <input 
+                  type="text" 
+                  defaultValue="maurice"
+                  className="w-full bg-[#1C1C1E] border border-transparent focus:border-[#2D2D2D] rounded-xl pl-9 pr-4 py-3 text-sm text-[#FFFFFF] placeholder:text-[#504C46] outline-none transition-all focus:bg-[#1A1A1E]" 
+                />
+              </div>
             </div>
           </div>
 
@@ -69,6 +72,28 @@ export default function ProfileSettingsPage() {
               placeholder="e.g. Fullstack Developer at TechCorp"
               className="w-full bg-[#1C1C1E] border border-transparent focus:border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-[#FFFFFF] placeholder:text-[#504C46] outline-none transition-all focus:bg-[#1A1A1E]" 
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#9CA3AF]">Primary Timezone</label>
+              <select className="w-full bg-[#1C1C1E] border border-transparent focus:border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-[#FFFFFF] outline-none transition-all focus:bg-[#1A1A1E] appearance-none cursor-pointer">
+                <option value="UTC-8 (PST)">UTC-8 (PST)</option>
+                <option value="UTC-5 (EST)">UTC-5 (EST)</option>
+                <option value="UTC+0 (GMT)">UTC+0 (GMT)</option>
+                <option value="UTC+1 (CET)">UTC+1 (CET)</option>
+                <option value="UTC+8 (CST)">UTC+8 (CST)</option>
+                <option value="UTC+9 (JST)">UTC+9 (JST)</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-[0.1em] text-[#9CA3AF]">Experience Level</label>
+              <select className="w-full bg-[#1C1C1E] border border-transparent focus:border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-[#FFFFFF] outline-none transition-all focus:bg-[#1A1A1E] appearance-none cursor-pointer">
+                <option value="Beginner">Beginner (Foundational)</option>
+                <option value="Intermediate">Intermediate (Experienced)</option>
+                <option value="Advanced">Advanced (Architect)</option>
+              </select>
+            </div>
           </div>
 
           <div className="space-y-2">

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Play, Target, MessageSquare, ChevronRight, Eye } from 'lucide-react';
 import { CURRICULUM_WEEKS } from '@/lib/content';
+import CurriculumCopilot from '../components/CurriculumCopilot';
 
 export default function DashboardClient({ studentName, isImpersonating, studentId }: { studentName: string | null, isImpersonating: boolean, studentId: string | null }) {
   return (
@@ -39,15 +40,15 @@ export default function DashboardClient({ studentName, isImpersonating, studentI
       {/* Row 1: Apex Priority */}
       <div className="flex flex-col xl:flex-row gap-8">
          {/* 60% Hero: Resume Learning */}
-         <section className="flex-1 xl:w-3/5">
+         <section className="flex-1 xl:w-3/5 flex flex-col">
             <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#888888] mb-4">Continue Learning</h3>
-            <Link href={`/course/ai-product-builder/module/3/lesson/8${isImpersonating && studentId ? '?studentId='+studentId : ''}`} className="block group rounded-2xl bg-[#1C1C1E] hover:bg-gradient-to-br hover:from-[#1A1A1E] hover:to-[#121214] border border-[#2D2D2D] overflow-hidden hover:border-[#2D2D2D] hover:shadow-2xl hover:shadow-black/80 transition-all duration-500 relative">
+            <Link href={`/course/ai-product-builder/module/3/lesson/8${isImpersonating && studentId ? '?studentId='+studentId : ''}`} className="group flex-1 flex flex-col rounded-2xl bg-[#1C1C1E] hover:bg-gradient-to-br hover:from-[#1A1A1E] hover:to-[#121214] border border-[#2D2D2D] overflow-hidden hover:border-[#2D2D2D] hover:shadow-2xl hover:shadow-black/80 transition-all duration-500 relative">
                {/* The Academic Horizon Line */}
                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-[#B08D57] to-transparent z-30 opacity-80"></div>
                
-               <div className="flex flex-col md:flex-row items-stretch h-full">
+               <div className="flex flex-col md:flex-row items-stretch flex-1">
                   {/* Media */}
-                  <div className="w-full md:w-5/12 bg-[#111111] relative overflow-hidden flex-shrink-0 border-b md:border-b-0 md:border-r border-[#2D2D2D]">
+                  <div className="w-full md:w-5/12 bg-[#111111] relative overflow-hidden flex-shrink-0 border-b md:border-b-0 md:border-r border-[#2D2D2D] min-h-[200px] md:min-h-0">
                      <div className="absolute inset-0 bg-[#1D1D21]/40 mix-blend-overlay z-10 transition-colors duration-500 group-hover:bg-[#1D1D21]/20"></div>
                      <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600&auto=format&fit=crop" alt="Code" className="w-full h-full object-cover opacity-40 grayscale group-hover:scale-105 group-hover:opacity-50 transition-all duration-[3000ms] ease-out absolute inset-0 z-0" />
                      {/* Overlay Icon */}
@@ -61,16 +62,18 @@ export default function DashboardClient({ studentName, isImpersonating, studentI
                      </div>
                   </div>
                   {/* Content */}
-                  <div className="p-7 xl:p-8 flex flex-col justify-center flex-1">
-                     <div className="flex items-center gap-3 mb-3 text-[10px] font-semibold tracking-[0.2em] text-[#9CA3AF] uppercase">
-                        <span className="text-[#FFFFFF]">Sprint 03</span>
-                        <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                        <span className="flex items-center gap-1.5"><Play className="w-2.5 h-2.5" /> 12 mins left</span>
+                  <div className="p-7 xl:p-8 flex flex-col flex-1">
+                     <div className="flex-1 flex flex-col justify-center mb-6">
+                        <div className="flex items-center gap-3 mb-3 text-[10px] font-semibold tracking-[0.2em] text-[#9CA3AF] uppercase">
+                           <span className="text-[#FFFFFF]">Sprint 03</span>
+                           <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                           <span className="flex items-center gap-1.5"><Play className="w-2.5 h-2.5" /> 12 mins left</span>
+                        </div>
+                        <h2 className="text-xl md:text-[24px] font-semibold tracking-[-0.01em] leading-tight text-[#FFFFFF] mb-3 group-hover:text-white transition-colors">Hooking Up Authentication Flows</h2>
+                        <p className="text-[#D1D5DB] text-[14px] leading-relaxed">Master backend connections by generating and implementing robust authentication flows using AI.</p>
                      </div>
-                     <h2 className="text-lg md:text-[20px] font-semibold tracking-[-0.01em] leading-tight text-[#FFFFFF] mb-2 group-hover:text-white transition-colors">Hooking Up Authentication Flows</h2>
-                     <p className="text-[#D1D5DB] text-[13px] leading-relaxed mb-8">Master backend connections by generating and implementing robust authentication flows using AI.</p>
                      
-                     <div className="mt-auto flex items-center justify-between border-t border-[#2D2D2D] pt-4">
+                     <div className="mt-auto flex items-center justify-between border-t border-[#2D2D2D] pt-6">
                         <div className="flex items-center text-[13px] font-medium text-[#FFFFFF] group-hover:text-white transition-colors">
                            Resume Sprint <ChevronRight className="w-3.5 h-3.5 ml-1.5 group-hover:ml-2.5 transition-all ease-out" />
                         </div>
@@ -260,6 +263,16 @@ export default function DashboardClient({ studentName, isImpersonating, studentI
             </div>
          </div>
 
+      </section>
+
+      {/* Row 5: AI Copilot Assistant */}
+      <section className="mt-16 pb-20">
+         <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#888888] mb-5 flex items-center gap-2">
+            <MessageSquare className="w-3.5 h-3.5" /> OpenSch Copilot
+         </h3>
+         <div className="w-full">
+            <CurriculumCopilot />
+         </div>
       </section>
 
     </div>

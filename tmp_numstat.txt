@@ -1,0 +1,25 @@
+COMMIT:0167197f027275217d12a3d409af40a7d475c96b|S K
+
+7	0	vercel.json
+COMMIT:7e8fd44864f44906053918c72818ec4af34afc0e|S K
+
+24	19	app/about/AboutPage.tsx
+398	72	app/page.tsx
+47	41	app/pricing/PricingPage.tsx
+7	6	components/ui/CTAButton.tsx
+5	4	lib/constants.ts
+93	87	lib/content.ts
+145	644	package-lock.json
+-	-	public/Inspo/006dc3739453a8693100b4c4805c64cb.jpg
+-	-	public/Inspo/739353ade2796728b1b6f57a9923c5f9.jpg
+-	-	public/Inspo/c0444118a1165e03eccd8fb32e0e2c1f.jpg
+-	-	public/basic-tier-bg.png
+-	-	public/images/Maurice.png
+-	-	public/images/demo_day_presenter.png
+-	-	public/images/hero-illustration.png
+-	-	public/images/mockup-dashboard.png
+-	-	public/images/mockup-landing.png
+-	-	public/images/mockup-mobile.png
+-	-	public/images/nigerian_presenter_demo.png
+-	-	public/premium-tier-bg.png
+1	1	tsconfig.json

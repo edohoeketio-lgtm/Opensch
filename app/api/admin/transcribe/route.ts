@@ -5,8 +5,24 @@ import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import os from 'os';
+import { z } from 'zod';
+import prisma from '@/lib/prisma';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
 const execAsync = promisify(exec);
+
+// Rate limiter: 5 requests per 10 minutes (transcription is expensive)
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(5, '10 m'),
+  analytics: true,
+});
+
+// Zod Schema for validation
+const TranscribeSchema = z.object({
+  lessonId: z.string().uuid({ message: "Invalid Lesson ID format" }),
+});
 
 // Initialize OpenAI client
 // Ensure OPENAI_API_KEY is set in your .env or Vercel environment variables
@@ -26,14 +42,50 @@ export async function POST(req: Request) {
   }
 
   try {
+    // 1. Rate Limiting Check
+    const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1';
+    const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_transcribe_${ip}`);
+    
+    if (!success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Try again later.' }, {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': limit.toString(),
+          'X-RateLimit-Remaining': remaining.toString(),
+          'X-RateLimit-Reset': reset.toString()
+        }
+      });
+    }
+
+    // 2. Parse and Validate Form Data
     const formData = await req.formData();
     const file = formData.get('file');
+    const lessonIdRaw = formData.get('lessonId');
+
+    const validatedFields = TranscribeSchema.safeParse({
+      lessonId: lessonIdRaw,
+    });
+
+    if (!validatedFields.success) {
+      return NextResponse.json({ error: 'Validation failed', details: validatedFields.error.flatten() }, { status: 400 });
+    }
+
+    const { lessonId } = validatedFields.data;
+
+    // Verify Lesson exists before deep processing
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonId }
+    });
+
+    if (!lesson) {
+      return NextResponse.json({ error: 'Lesson not found.' }, { status: 404 });
+    }
 
     if (!file || !(file instanceof Blob)) {
       return NextResponse.json({ error: 'No valid video or audio file provided.' }, { status: 400 });
     }
 
-    console.log(`Starting transcription for file: ${(file as File).name} (${file.size} bytes)`);
+    console.log(`Starting transcription for Lesson ${lessonId}, file: ${(file as File).name} (${file.size} bytes)`);
 
     // --- AUDIO COMPRESSION PASS ---
     // OpenAI Whisper has a strict 25MB limit. We extract the audio locally to a tiny MP3 first.
@@ -103,12 +155,19 @@ export async function POST(req: Request) {
         cleanedText: cleanedTranscript 
     };
 
-    // Save it directly to the public folder so the UI can use it
-    const filePath = path.join(process.cwd(), 'public', 'latest-transcript.json');
-    fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf-8');
-    console.log('Saved transcript to public/latest-transcript.json');
+    // Save directly to Prisma Database to prevent Serverless ephemeral file system data loss
+    await prisma.lesson.update({
+      where: { id: lessonId },
+      data: {
+        transcriptRawText: payload.rawText,
+        transcriptCleanText: payload.cleanedText,
+        transcriptSegments: payload.segments as any,
+      }
+    });
 
-    // Return the full payload needed for the OpenSch Intelligence UI
+    console.log(`Successfully saved transcript to Prisma for Lesson: ${lessonId}`);
+
+    // Return the payload for immediate UI hydration if needed
     return NextResponse.json(payload);
 
   } catch (error: any) {

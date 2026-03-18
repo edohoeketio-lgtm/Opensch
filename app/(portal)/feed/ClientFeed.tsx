@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronUp, ChevronDown, MessageSquare, Video, Link as LinkIcon, BookOpen, Target, Award, CheckCircle2, HelpCircle, Image as ImageIcon, MoreHorizontal, Code, Github, BarChart2, X } from 'lucide-react';
+import { ChevronUp, ChevronDown, MessageSquare, Video, Link as LinkIcon, BookOpen, Target, Award, CheckCircle2, HelpCircle, Image as ImageIcon, MoreHorizontal, Code, Github, BarChart2, X, Loader2 } from 'lucide-react';
+import { useToast } from '../components/ToastContext';
+import { createFeedPost } from '@/app/actions/threads';
+import { getAvatarColor } from '@/lib/utils';
+import { InteractivePoll } from './InteractivePoll';
 
 export type UserType = {
   name: string;
@@ -46,13 +50,19 @@ interface ClientFeedProps {
 }
 
 export function ClientFeed({ initialItems }: ClientFeedProps) {
+  const { toast } = useToast();
   const [items, setItems] = useState<FeedItemType[]>(initialItems);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
   const [isComposing, setIsComposing] = useState(false);
   const [postImage, setPostImage] = useState<string | null>(null);
   const [postVideo, setPostVideo] = useState<string | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
   
   // Extra specific composer states
   const [isAddingCode, setIsAddingCode] = useState(false);
@@ -113,8 +123,10 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
     return true;
   });
 
-  const handlePostThread = () => {
+  const handlePostThread = async () => {
     if (!newPostContent.trim()) return;
+    
+    setIsSubmitting(true);
     
     // Provide a fallback title or derive it from the content if we eliminated the explicit title input
     const finalTitle = newPostTitle.trim() ? newPostTitle : `${newPostContent.substring(0, 30)}...`;
@@ -130,32 +142,9 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
     // If an explicit postType was selected (future-proofing) use that, otherwise use derived
     const finalType = postType || derivedType;
 
-    const typeMeta = {
-      'Question': { icon: 'HelpCircle', color: 'text-[#FFFFFF]', bg: 'bg-white/[0.06]' },
-      'Build': { icon: 'CheckCircle2', color: 'text-[#B08D57]', bg: 'bg-[#B08D57]/10' },
-      'Deliverable': { icon: 'Target', color: 'text-[#FFFFFF]', bg: 'bg-[#1C1C1E]' },
-      'Feedback': { icon: 'BookOpen', color: 'text-[#FFFFFF]', bg: 'bg-[#1C1C1E]' },
-      'Announcement': { icon: 'Award', color: 'text-[#B08D57]', bg: 'bg-[#B08D57]/10' },
-      'Win': { icon: 'Award', color: 'text-[#FFFFFF]', bg: 'bg-[#1C1C1E]' },
-      'Resource': { icon: 'LinkIcon', color: 'text-[#A6A197]', bg: 'bg-white/[0.04]' },
-      'General': { icon: 'MessageSquare', color: 'text-[#FFFFFF]', bg: 'bg-white/[0.04]' },
-      'Discussion': { icon: 'MessageSquare', color: 'text-[#FFFFFF]', bg: 'bg-white/[0.04]' }
-    }[finalType] || { icon: 'MessageSquare', color: 'text-[#FFFFFF]', bg: 'bg-white/[0.04]' };
 
-    const newItem: FeedItemType = {
-      id: Date.now().toString(),
-      type: finalType,
-      user: { name: "Maurice Edohoeket", initial: "M", role: "Student" },
-      time: "Just now",
-      title: finalTitle,
-      content: newPostContent,
-      iconName: typeMeta.icon,
-      color: typeMeta.color,
-      bg: typeMeta.bg,
-      endorsements: 0,
-      hasEndorsed: false,
-      repliesCount: 0,
-      sprintContext: "Sprint 3",
+
+    const payload: any = {
       image: postImage || undefined,
       video: postVideo || undefined,
       codeSnippet: isAddingCode && codeSnippet.trim() ? codeSnippet : undefined,
@@ -165,7 +154,37 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
         : undefined
     };
 
-    setItems([newItem, ...items]);
+    const hasPayload = Object.values(payload).some(val => val !== undefined);
+
+    const res = await createFeedPost({
+      title: finalTitle,
+      category: finalType,
+      content: newPostContent,
+      payload: hasPayload ? payload : undefined
+    });
+
+    setIsSubmitting(false);
+
+    if (!res.success) {
+      if (res.errors) {
+        const firstErrorKey = Object.keys(res.errors)[0];
+        toast({
+          message: `Validation Error: ${res.errors[firstErrorKey][0]}`,
+          type: "error"
+        });
+      } else {
+        toast({
+          message: res.error || "Failed to post: Something went wrong",
+          type: "error"
+        });
+      }
+      return;
+    }
+
+    toast({
+      message: "Your thought has been shared with the campus.",
+      type: "success"
+    });
     setNewPostTitle("");
     setNewPostContent("");
     setPostType(null);
@@ -379,10 +398,10 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                    setNewPostTitle("Untitled Thought");
                    handlePostThread();
                 }}
-                disabled={!newPostContent.trim()}
-                className="px-5 py-2 rounded-xl text-[14px] font-semibold text-[#050505] bg-[#F5F2EB] hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                disabled={(!newPostContent.trim() && !postImage && !postVideo && !isAddingCode) || isSubmitting}
+                className="px-5 py-2 rounded-xl text-[14px] font-semibold text-[#050505] bg-[#F5F2EB] hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 min-w-[80px]"
               >
-                Post
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin text-[#050505]" /> : "Post"}
               </button>
             </div>
           </div>
@@ -411,29 +430,38 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                          </>
                       )}
                    </div>
-                   <span className="text-xs font-medium text-[#888888]">{item.time}</span>
                 </div>
 
                 {/* Main Content Area */}
                 <div className="flex gap-4">
                    {/* Author Avatar */}
                    <div className="flex-shrink-0">
-                     <div className="w-10 h-10 rounded-full bg-[#1C1C1E] border border-[#2D2D2D] flex items-center justify-center overflow-hidden">
+                     <div 
+                       className="w-10 h-10 rounded-full border border-[#2D2D2D] flex items-center justify-center overflow-hidden"
+                       style={{ backgroundColor: getAvatarColor(item.user.initial) }}
+                     >
                        <span className="text-[#FFFFFF] font-bold text-sm">{item.user.initial}</span>
                      </div>
                    </div>
 
                    {/* Content block */}
                    <div className="flex-1">
-                     <div className="flex items-center gap-2 mb-1.5">
+                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                        <span className="text-[15px] font-semibold text-[#FFFFFF] tracking-tight">{item.user.name}</span>
+                       <span className="text-xs font-medium text-[#888888]">•</span>
+                       <span className="text-xs font-medium text-[#888888]">{item.time}</span>
                        {item.user.role === 'Instructor' && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-[0.1em] border border-[#B08D57]/20 text-[#B08D57] bg-[#B08D57]/10">Instructor</span>
+                          <>
+                            <span className="text-xs font-medium text-[#888888]">•</span>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-[0.1em] border border-[#B08D57]/20 text-[#B08D57] bg-[#B08D57]/10">Instructor</span>
+                          </>
                        )}
                      </div>
 
                      <Link href={`/feed/${item.id}`} className="group/post-link block mt-1">
-                       <h3 className="text-[17px] font-semibold text-[#FFFFFF] group-hover/post-link:text-[#B08D57] transition-colors tracking-tight mb-2 leading-snug">{item.title}</h3>
+                       {!(item.title === "Untitled Thought" || item.content.startsWith(item.title.replace("...", ""))) && (
+                         <h3 className="text-[17px] font-semibold text-[#FFFFFF] group-hover/post-link:text-[#B08D57] transition-colors tracking-tight mb-2 leading-snug">{item.title}</h3>
+                       )}
                        <p className="text-[14px] text-[#D1D5DB] leading-relaxed line-clamp-3">
                          {item.content}
                        </p>
@@ -473,22 +501,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                          </div>
                        )}
                        {item.poll && (
-                         <div className="mt-4 rounded-xl border border-[#2D2D2D] bg-[#111111] p-5">
-                           <h4 className="text-[15px] font-bold text-[#FFFFFF] mb-5 flex items-start gap-2.5 leading-snug">
-                             <BarChart2 className="w-[18px] h-[18px] text-[#2E8B6C] shrink-0 translate-y-[2px]" />
-                             {item.poll.question}
-                           </h4>
-                           <div className="space-y-2.5">
-                             {item.poll.options.map((opt, idx) => (
-                               <div key={idx} className="relative w-full border border-[#2D2D2D] bg-white/[0.02] rounded-lg overflow-hidden flex items-center px-4 py-3 hover:bg-white/[0.06] hover:border-white/[0.1] transition-all cursor-pointer group">
-                                 <span className="relative z-10 text-[14px] font-medium text-[#FFFFFF]">{opt.text}</span>
-                                 {/* Mock progress bar to show how votes might look */}
-                                 <div className="absolute top-0 left-0 bottom-0 bg-[#2E8B6C]/10 w-0 group-hover:w-[15%] transition-all duration-500 rounded-r-none"></div>
-                               </div>
-                             ))}
-                           </div>
-                           <p className="text-[11px] font-semibold text-[#525252] mt-4 uppercase tracking-wider">0 votes · Poll Open</p>
-                         </div>
+                         <InteractivePoll question={item.poll.question} options={item.poll.options} isFeedView={true} />
                        )}
                      </Link>
 
@@ -513,22 +526,39 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
             );
           })
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 text-center border-t border-[#2D2D2D]">
-            <div className="w-16 h-16 mb-6 rounded-full bg-[#1C1C1E] border border-[#2D2D2D] flex items-center justify-center">
-               <MessageSquare className="w-6 h-6 text-[#555555]" />
+          <div className="flex flex-col items-center justify-center py-32 text-center border-t border-[#2D2D2D] relative overflow-hidden">
+            {/* Subtle background glow for empty state */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+              <div className="w-[300px] h-[300px] bg-white/10 blur-[100px] rounded-full"></div>
             </div>
-            <h3 className="text-[18px] font-bold text-[#FFFFFF] mb-2 tracking-tight">No activity yet</h3>
-            <p className="text-[14px] text-[#A6A197] max-w-sm mb-6 leading-relaxed">
-              When builders start shipping and asking questions in this filter, they'll appear here.
+            
+            <div className="w-20 h-20 mb-6 rounded-2xl bg-[#1C1C1E] border border-[#2D2D2D] flex items-center justify-center shadow-xl shadow-black/50 relative z-10">
+               <MessageSquare className="w-8 h-8 text-[#555555]" />
+            </div>
+            <h3 className="text-[20px] font-bold text-[#FFFFFF] mb-3 tracking-tight relative z-10">It's quiet here...</h3>
+            <p className="text-[15px] text-[#A6A197] max-w-md mb-8 leading-relaxed relative z-10">
+              {activeTab === 'All Activity' 
+                ? "The Campus Feed is where top engineers share their wins, ask hard architectural questions, and review peer code. Be the first to spark an engineering discussion today."
+                : `There are currently no engineering posts filed under ${activeTab}. Break the ice and share something valuable with your peers.`}
             </p>
-            <button 
-              onClick={() => {
-                setActiveTab('All Activity');
-              }}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-semibold text-[#FFFFFF] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-            >
-              Clear filters
-            </button>
+            
+            <div className="flex items-center gap-3 relative z-10">
+              {activeTab !== 'All Activity' ? (
+                <button 
+                  onClick={() => setActiveTab('All Activity')}
+                  className="px-6 py-3 rounded-xl text-[14px] font-bold text-[#FFFFFF] bg-white/[0.04] border border-[#2D2D2D] hover:bg-white/[0.08] hover:border-white/20 transition-all shadow-sm flex items-center gap-2"
+                >
+                  <X className="w-4 h-4 text-[#888888]" /> Clear Filters
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setIsComposing(true)}
+                  className="px-6 py-3 rounded-xl text-[14px] font-bold text-black bg-[#F5F2EB] hover:bg-white shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all flex items-center gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" /> Start a Discussion
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -3,27 +3,45 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Command, Blocks, Inbox, Users, Megaphone, ChevronRight, CheckCircle, ChevronLeft, LogOut } from 'lucide-react';
+import { 
+  Users, 
+  Video, 
+  Settings, 
+  MessageSquare, 
+  BarChart, 
+  Bell, 
+  GraduationCap, 
+  Mail, 
+  ClipboardList,
+  Calendar,
+  ChevronRight, 
+  ChevronLeft, 
+  LogOut
+} from "lucide-react";
 
 export function AdminSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Command Center', href: '/admin', icon: Command },
-    { name: 'Course Builder', href: '/admin/curriculum', icon: Blocks },
-    { name: 'Review Queue', href: '/admin/reviews', icon: Inbox },
-    { name: 'Student Roster', href: '/admin/roster', icon: Users },
-    { name: 'Broadcasts', href: '/admin/broadcasts', icon: Megaphone },
+    { name: "Cohort Builder", href: "/admin/curriculum", icon: GraduationCap },
+    { name: "Review Queue", href: "/admin/reviews", icon: MessageSquare },
+    { name: "Student Roster", href: "/admin/roster", icon: Users },
+    { name: "Admissions Pipeline", href: "/admin/admissions", icon: ClipboardList },
+    { name: "Live Ops HQ", href: "/admin/live-ops", icon: Calendar },
+    { name: "Broadcasts", href: "/admin/broadcasts", icon: Bell },
+    { name: "Faculty Invites", href: "/admin/instructors", icon: Mail },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart },
+    { name: "Settings", href: "/admin/settings", icon: Settings },
   ];
 
   return (
-    <aside className={`border-r border-[#2D2D2D] hidden md:flex flex-col bg-[#111111] transition-all duration-300 relative ${isCollapsed ? 'w-[88px]' : 'w-72'}`}>
+    <aside className={`border-r border-admin-border hidden md:flex flex-col bg-ink transition-all duration-300 relative ${isCollapsed ? 'w-[88px]' : 'w-72'}`}>
       
       {/* Collapse Toggle */}
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-8 w-6 h-6 rounded-full bg-[#1D1D21] border border-[#2D2D2D] flex items-center justify-center text-[#9CA3AF] hover:text-[#FFFFFF] hover:bg-[#1C1C1E] transition-colors z-20 shadow-md shadow-black/50"
+        className="absolute -right-3 top-8 w-6 h-6 rounded-full bg-admin-surface-hover border border-admin-border flex items-center justify-center text-[#9CA3AF] hover:text-surface hover:bg-admin-surface transition-colors z-20 shadow-md shadow-black/50"
       >
         {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
@@ -36,10 +54,10 @@ export function AdminSidebar() {
            </div>
            {!isCollapsed && (
              <div className="flex flex-col overflow-hidden">
-                <span className="font-bold tracking-tight text-xl text-[#FFFFFF] whitespace-nowrap transition-all duration-300 leading-none">
+                <span className="font-bold tracking-tight text-xl text-surface whitespace-nowrap transition-all duration-300 leading-none">
                   OpenSch
                 </span>
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#B08D57] mt-1.5">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent mt-1.5">
                   Admin
                 </span>
              </div>
@@ -58,11 +76,11 @@ export function AdminSidebar() {
               href={item.href}
               className={`flex items-center gap-3 py-2.5 rounded-xl transition-all duration-300 group ${
                 isActive 
-                  ? 'bg-[#1C1C1E] text-[#FFFFFF] border border-[#2D2D2D] cursor-default' 
-                  : 'hover:bg-white/5 text-[#525252] hover:text-[#FFFFFF] border border-transparent cursor-pointer'
+                  ? 'bg-admin-surface text-surface border border-admin-border cursor-default' 
+                  : 'hover:bg-white/5 text-admin-muted-dark hover:text-surface border border-transparent cursor-pointer'
               } ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
             >
-              <Icon className={`w-5 h-5 shrink-0 transition-colors duration-300 ${isActive ? 'text-[#FFFFFF]' : 'group-hover:text-[#FFFFFF]'}`} />
+              <Icon className={`w-5 h-5 shrink-0 transition-colors duration-300 ${isActive ? 'text-surface' : 'group-hover:text-surface'}`} />
               {!isCollapsed && <span className="font-medium text-sm tracking-wide whitespace-nowrap">{item.name}</span>}
             </Link>
           );
@@ -71,21 +89,21 @@ export function AdminSidebar() {
 
       {/* Admin Profile Widget */}
       <div className={`p-4 mt-auto ${isCollapsed ? 'px-3' : ''}`}>
-         <Link href="/dashboard" className={`block p-4 rounded-2xl bg-transparent border border-[#2D2D2D] hover:bg-white/5 transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+         <Link href="/dashboard" className={`block p-4 rounded-2xl bg-transparent border border-admin-border hover:bg-white/5 transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-[#1C1C1E] overflow-hidden relative border border-[#2D2D2D] shrink-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-[#FFFFFF]">AD</span>
+               <div className="w-10 h-10 rounded-full bg-admin-surface overflow-hidden relative border border-admin-border shrink-0 flex items-center justify-center">
+                  <span className="text-sm font-bold text-surface">AD</span>
                </div>
                {!isCollapsed && (
                  <div className="flex flex-col whitespace-nowrap">
-                    <span className="text-sm font-medium text-[#FFFFFF]/90 group-hover:text-[#FFFFFF] transition-colors tracking-tight">Return to Portal</span>
+                    <span className="text-sm font-medium text-surface/90 group-hover:text-surface transition-colors tracking-tight">Return to Portal</span>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                       <span className="text-[10px] text-[#888888] font-semibold tracking-[0.1em] uppercase">Exit Admin</span>
+                       <span className="text-[10px] text-admin-muted font-semibold tracking-[0.1em] uppercase">Exit Admin</span>
                     </div>
                  </div>
                )}
             </div>
-            {!isCollapsed && <LogOut className="w-4 h-4 text-[#888888] group-hover:text-[#B08D57] transition-colors shrink-0" />}
+            {!isCollapsed && <LogOut className="w-4 h-4 text-admin-muted group-hover:text-accent transition-colors shrink-0" />}
          </Link>
       </div>
     </aside>

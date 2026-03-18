@@ -1,12 +1,17 @@
 "use server";
 import prisma from '@/lib/prisma';
 import { calculateRiskLevel } from '@/lib/risk_engine';
-
+import { getAuthenticatedUser } from '@/lib/auth';
 import { TelemetryLog, GradeRecord, StudentTelemetryPayload } from '@/app/types/telemetry';
 
 export async function getStudentTelemetry(studentId: string): Promise<StudentTelemetryPayload> {
   // If the DB server is unreachable locally, return an empty payload to avoid crashing the CRM
   try {
+    const caller = await getAuthenticatedUser();
+    if (!caller) throw new Error("Unauthorized access to telemetry");
+    if (caller.role === 'STUDENT' && caller.id !== studentId) {
+      throw new Error("Forbidden. Students can only view their own telemetry.");
+    }
     const student = await prisma.user.findUnique({
       where: { id: studentId },
       include: {

@@ -1,13 +1,99 @@
-"use client";
+"use server";
 
 import { MessageSquare, Target, Award, ArrowUpRight, CheckCircle2, HelpCircle, BookOpen, Video, Link as LinkIcon, ChevronUp, ChevronDown, Flame, Calendar, Users, PenTool, Lightbulb, Bell, FileText, Bookmark, ThumbsUp } from 'lucide-react';
 import Link from 'next/link';
 import { ClientFeed } from './ClientFeed';
-
+import prisma from '@/lib/prisma';
 import { MOCK_FEED_ITEMS } from '@/lib/mock-data';
+import { CATEGORY_META_MAP } from '@/lib/constants';
 
-export default function CampusFeedPage() {
-  const feedItems = MOCK_FEED_ITEMS;
+export default async function CampusFeedPage() {
+  let broadcasts: any[] = [];
+  let dbThreads: any[] = [];
+  try {
+    broadcasts = await prisma.broadcast.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    dbThreads = await prisma.thread.findMany({
+      where: { targetType: 'CAMPUS' },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+          include: { sender: true }
+        },
+        _count: {
+          select: { messages: true }
+        }
+      }
+    });
+  } catch (dbError: any) {
+    if (dbError?.code === 'P1001') {
+      console.warn("Database connection unavailable. Skipping dynamic fetches.");
+    } else {
+      console.error(dbError);
+    }
+  }
+
+  const dynamicBroadcastItems = broadcasts.map(b => ({
+    id: b.id,
+    type: 'Announcement',
+    user: {
+      name: 'OpenSch Administration',
+      initial: 'OS',
+      role: 'SYSTEM'
+    },
+    time: b.createdAt.toLocaleDateString(),
+    title: b.title,
+    content: b.content,
+    iconName: 'Award',
+    color: 'text-[#B08D57]',
+    bg: 'bg-[#B08D57]/10',
+    endorsements: 0,
+    hasEndorsed: false,
+    repliesCount: 0,
+    sprintContext: `Broadcast: ${b.targetAudience.toUpperCase()}`
+  }));
+
+
+
+  const dynamicThreadItems = dbThreads.map(t => {
+    const firstMessage = t.messages[0];
+    const author = firstMessage?.sender;
+    const typeMeta = CATEGORY_META_MAP[t.category] || CATEGORY_META_MAP['General'];
+    const payload = firstMessage?.payload as any || {};
+
+    return {
+      id: t.id,
+      type: t.category,
+      user: {
+        name: author?.name || (author?.email ? author.email.split('@')[0] : 'Unknown'),
+        initial: author?.name?.[0]?.toUpperCase() || author?.email?.[0]?.toUpperCase() || 'U',
+        role: author?.role === 'INSTRUCTOR' ? 'Instructor' : 'Student',
+      },
+      time: new Date(t.createdAt).toLocaleDateString(),
+      title: t.title,
+      content: firstMessage?.content || '',
+      iconName: typeMeta.icon,
+      color: typeMeta.color,
+      bg: typeMeta.bg,
+      endorsements: t.upvotes || 0,
+      hasEndorsed: false,
+      repliesCount: Math.max(0, (t._count?.messages || 0) - 1),
+      image: payload.image,
+      video: payload.video,
+      codeSnippet: payload.codeSnippet,
+      repoUrl: payload.repoUrl,
+      poll: payload.poll,
+    };
+  });
+
+  // Interleave Mock Feed items below our real items for the demo feeling populated
+  const feedItems = [...dynamicBroadcastItems, ...dynamicThreadItems, ...MOCK_FEED_ITEMS];
 
   return (
     <div className="flex-1 overflow-y-auto bg-transparent relative">
@@ -19,8 +105,6 @@ export default function CampusFeedPage() {
           </div>
           <p className="text-[15px] font-medium text-[#9CA3AF]">High-signal discussions, peer review, and continuous learning from your cohort.</p>
         </header>
-
-
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -74,7 +158,7 @@ export default function CampusFeedPage() {
               </h3>
               <div className="space-y-3 relative z-10">
                 <p className="text-sm text-[#FFFFFF] leading-relaxed">
-                  "Seeing a lot of struggles with React Server Components this sprint. Remember: keep your boundaries explicit. Only use 'use client' at the absolute leaves of your tree."
+                  &quot;Seeing a lot of struggles with React Server Components this sprint. Remember: keep your boundaries explicit. Only use &apos;use client&apos; at the absolute leaves of your tree.&quot;
                 </p>
                 <div className="flex items-center gap-2 pt-2">
                    <div className="w-6 h-6 rounded-full bg-[#B08D57]/20 flex items-center justify-center">
