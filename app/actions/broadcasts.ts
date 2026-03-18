@@ -76,3 +76,47 @@ export async function deployBroadcast(formData: FormData, status: 'DRAFT' | 'PUB
   }
 }
 
+export async function deleteBroadcast(id: string) {
+  const user = await getAuthenticatedUser();
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) throw new Error("Forbidden");
+  await prisma.broadcast.delete({ where: { id } });
+  revalidatePath("/admin/broadcasts");
+  revalidatePath("/feed");
+  return { success: true };
+}
+
+export async function updateBroadcast(id: string, formData: FormData) {
+  const user = await getAuthenticatedUser();
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR')) throw new Error("Forbidden");
+  
+  const rawData = {
+    subject: formData.get("subject"),
+    message: formData.get("message"),
+    target: formData.get("target"),
+    scheduledFor: formData.get("scheduledFor") || undefined,
+  };
+  
+  const validatedData = BroadcastSchema.safeParse(rawData);
+  if (!validatedData.success) return { success: false, error: validatedData.error.issues[0].message };
+  
+  const { subject, message, target, scheduledFor } = validatedData.data;
+
+  let parsedDate = null;
+  if (scheduledFor) {
+    parsedDate = new Date(scheduledFor);
+  }
+
+  const broadcast = await prisma.broadcast.update({
+    where: { id },
+    data: {
+      title: subject,
+      content: message,
+      targetAudience: target,
+      scheduledFor: parsedDate,
+    },
+  });
+
+  revalidatePath("/admin/broadcasts");
+  revalidatePath("/feed");
+  return { success: true, broadcastId: broadcast.id };
+}

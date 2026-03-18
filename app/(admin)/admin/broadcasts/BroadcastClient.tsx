@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Megaphone, Send, Users, Sparkles, Clock, CalendarDays, Archive, FileEdit, Calendar } from 'lucide-react';
-import { deployBroadcast } from '@/app/actions/broadcasts';
+import { Megaphone, Send, Users, Sparkles, Clock, CalendarDays, Archive, FileEdit, Calendar, Trash2 } from 'lucide-react';
+import { deployBroadcast, updateBroadcast, deleteBroadcast } from '@/app/actions/broadcasts';
 import { useToast } from '@/app/(portal)/components/ToastContext';
 
 export interface UI_Broadcast {
@@ -25,6 +25,7 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
   const [target, setTarget] = useState('all'); // all, spring25, fall24
   const [scheduledFor, setScheduledFor] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleDeploy = async (status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED') => {
@@ -49,7 +50,12 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
         formData.append('scheduledFor', scheduledFor);
       }
       
-      const result = await deployBroadcast(formData, status);
+      let result;
+      if (editingId) {
+        result = await updateBroadcast(editingId, formData);
+      } else {
+        result = await deployBroadcast(formData, status);
+      }
       
       if (result.success) {
         toast({ 
@@ -61,6 +67,7 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
         setSubject('');
         setMessage('');
         setScheduledFor('');
+        setEditingId(null);
       } else {
         toast({ message: result.error || 'Unknown error occurred.', type: 'error' });
       }
@@ -68,6 +75,33 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
       toast({ message: 'Failed to process broadcast.', type: 'error' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (b: UI_Broadcast) => {
+    setSubject(b.title);
+    setMessage(b.content);
+    setTarget(b.targetAudience);
+    if (b.scheduledFor) {
+       // local datetime-local format: YYYY-MM-DDThh:mm
+       const d = new Date(b.scheduledFor);
+       setScheduledFor(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+    } else {
+       setScheduledFor('');
+    }
+    setEditingId(b.id);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this broadcast?")) return;
+    try {
+      const res = await deleteBroadcast(id);
+      if (res.success) {
+        toast({ message: "Broadcast deleted successfully.", type: "success" });
+        if (editingId === id) setEditingId(null);
+      }
+    } catch (e) {
+      toast({ message: "Failed to delete broadcast.", type: "error" });
     }
   };
 
@@ -141,7 +175,7 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
                   </div>
                   <div className="space-y-2 relative">
                      <label className="text-xs font-semibold text-admin-muted uppercase tracking-[0.1em] flex items-center justify-between">
-                       <span>Schedule</span>
+                       <span>{editingId ? "Update Schedule" : "Schedule"}</span>
                        {scheduledFor && (
                          <button onClick={() => setScheduledFor('')} className="text-[9px] text-red-400 hover:text-red-300">CLEAR</button>
                        )}
@@ -173,33 +207,45 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-admin-border/50">
-                    <button 
-                      onClick={() => handleDeploy('DRAFT')}
-                      disabled={isSubmitting || (!subject.trim() && !message.trim())}
-                      className="px-6 py-2.5 rounded-xl border border-admin-border text-admin-muted text-sm font-medium hover:text-surface hover:bg-white/5 transition-all disabled:opacity-50"
-                    >
-                        Save as Draft
-                    </button>
-                    {scheduledFor ? (
+                <div className="flex items-center justify-between gap-3 pt-4 border-t border-admin-border/50">
+                    <div>
+                      {editingId && (
+                        <button 
+                          onClick={() => { setEditingId(null); setSubject(''); setMessage(''); setScheduledFor(''); }}
+                          className="text-[10px] uppercase font-semibold text-admin-muted hover:text-surface transition-colors"
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
                       <button 
-                        onClick={() => handleDeploy('SCHEDULED')}
-                        disabled={isSubmitting || !subject.trim() || !message.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all duration-300 shadow-xl shadow-blue-500/10 disabled:opacity-50"
+                        onClick={() => handleDeploy('DRAFT')}
+                        disabled={isSubmitting || (!subject.trim() && !message.trim())}
+                        className="px-6 py-2.5 rounded-xl border border-admin-border text-admin-muted text-sm font-medium hover:text-surface hover:bg-white/5 transition-all disabled:opacity-50"
                       >
-                          <Calendar className="w-4 h-4" />
-                          {isSubmitting ? 'Scheduling...' : 'Schedule Broadcast'}
+                          Save as Draft
                       </button>
-                    ) : (
-                      <button 
-                        onClick={() => handleDeploy('PUBLISHED')}
-                        disabled={isSubmitting || !subject.trim() || !message.trim()}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-[#FFFFFF] text-[#0B0B0C] rounded-xl text-sm font-semibold hover:bg-[#F5F2EB] hover:scale-[1.02] transition-all duration-300 shadow-xl shadow-white/5 disabled:opacity-50 disabled:hover:scale-100 cursor-pointer disabled:cursor-not-allowed"
-                      >
-                          <Send className="w-4 h-4" />
-                          {isSubmitting ? 'Deploying...' : 'Deploy Broadcast'}
-                      </button>
-                    )}
+                      {scheduledFor ? (
+                        <button 
+                          onClick={() => handleDeploy('SCHEDULED')}
+                          disabled={isSubmitting || !subject.trim() || !message.trim()}
+                          className="flex items-center gap-2 px-6 py-2.5 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-all duration-300 shadow-xl shadow-blue-500/10 disabled:opacity-50"
+                        >
+                            <Calendar className="w-4 h-4" />
+                            {isSubmitting ? (editingId ? 'Updating...' : 'Scheduling...') : (editingId ? 'Update Schedule' : 'Schedule Broadcast')}
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleDeploy('PUBLISHED')}
+                          disabled={isSubmitting || !subject.trim() || !message.trim()}
+                          className="flex items-center gap-2 px-6 py-2.5 bg-[#FFFFFF] text-[#0B0B0C] rounded-xl text-sm font-semibold hover:bg-[#F5F2EB] hover:scale-[1.02] transition-all duration-300 shadow-xl shadow-white/5 disabled:opacity-50 disabled:hover:scale-100 cursor-pointer disabled:cursor-not-allowed"
+                        >
+                            <Send className="w-4 h-4" />
+                            {isSubmitting ? (editingId ? 'Updating...' : 'Deploying...') : (editingId ? 'Update Broadcast' : 'Deploy Broadcast')}
+                        </button>
+                      )}
+                    </div>
                 </div>
 
              </div>
@@ -248,18 +294,27 @@ export default function BroadcastClient({ initialBroadcasts }: { initialBroadcas
                             {b.status}
                           </span>
                        </div>
-                       <div className="flex items-center justify-between">
-                         <span className="text-[10px] text-admin-muted">
-                           {b.status === 'SCHEDULED' && b.scheduledFor ? `Scheduled: ${new Date(b.scheduledFor).toLocaleDateString()}` : new Date(b.createdAt).toLocaleDateString()}
-                           {' • '}{b.author.profile?.fullName || b.author.email}
-                         </span>
-                         
-                         <div className="flex gap-2">
-                           {b.status === 'DRAFT' && (
-                             <button className="text-[10px] uppercase tracking-[0.1em] text-accent opacity-0 group-hover:opacity-100 transition-opacity font-semibold">Load Draft</button>
-                           )}
+                         <div className="flex items-center justify-between mt-1">
+                           <span className="text-[10px] text-admin-muted">
+                             {b.status === 'SCHEDULED' && b.scheduledFor ? `Scheduled: ${new Date(b.scheduledFor).toLocaleDateString()}` : new Date(b.createdAt).toLocaleDateString()}
+                             {' • '}{b.author.profile?.fullName || b.author.email}
+                           </span>
+                           
+                           <div className="flex gap-2">
+                             <button 
+                               onClick={() => handleEdit(b)}
+                               className="w-6 h-6 rounded bg-admin-surface hover:bg-white/5 flex items-center justify-center text-admin-muted hover:text-surface transition-colors opacity-0 group-hover:opacity-100"
+                              >
+                               <FileEdit className="w-3 h-3" />
+                             </button>
+                             <button 
+                               onClick={() => handleDelete(b.id)}
+                               className="w-6 h-6 rounded bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center text-red-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                              >
+                               <Trash2 className="w-3 h-3" />
+                             </button>
+                           </div>
                          </div>
-                       </div>
                     </div>
                  ))}
               </div>

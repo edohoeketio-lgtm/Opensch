@@ -3,9 +3,13 @@
 import Link from 'next/link';
 import { Play, Target, MessageSquare, ChevronRight, Eye } from 'lucide-react';
 import { CURRICULUM_WEEKS } from '@/lib/content';
+import { useTimeGreeting, extractLastName } from '@/lib/utils/time';
 import CurriculumCopilot from '../components/CurriculumCopilot';
 
 export default function DashboardClient({ studentName, isImpersonating, studentId }: { studentName: string | null, isImpersonating: boolean, studentId: string | null }) {
+  const lastName = extractLastName(studentName);
+  const greeting = useTimeGreeting(lastName);
+
   return (
     <div className="p-8 md:p-14 max-w-[1400px] mx-auto text-[#FFFFFF]">
       
@@ -33,7 +37,8 @@ export default function DashboardClient({ studentName, isImpersonating, studentI
            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B08D57]">Current Focus</span>
            <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-[#2D2D2D] text-[9px] font-semibold uppercase tracking-[0.15em] text-[#9CA3AF] flex items-center gap-1.5 shadow-sm"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></span> On Track</span>
         </div>
-        <h1 className="text-xl md:text-[22px] font-semibold tracking-[-0.02em] text-[#FFFFFF] leading-tight mb-1.5">Week 3 · Persistence & Polish.</h1>
+        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.03em] text-[#FFFFFF] leading-tight mb-3">{greeting}!</h1>
+        <h2 className="text-lg md:text-[20px] font-medium tracking-tight text-[#D1D5DB] leading-tight mb-1.5">Week 3 · Persistence & Polish.</h2>
         <p className="text-[#D1D5DB] text-[13px] leading-relaxed max-w-2xl">You left off at Sprint 3. Pick up exactly where you paused.</p>
       </header>
 

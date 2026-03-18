@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, GripVertical, ChevronDown, ChevronRight, Video, FileText, Settings, BookOpen, X, UploadCloud, AlignLeft, Loader2, Search, Filter, CheckCircle } from 'lucide-react';
 import { createModule, createLesson, updateLessonDetails } from '@/app/actions/curriculum';
 
@@ -28,6 +28,11 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
   const [isUploading, setIsUploading] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Sync state with server action revalidation updates
+  useEffect(() => {
+    setModules(initialModules);
+  }, [initialModules]);
 
   // Heavy-duty Filtering state
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,13 +139,34 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
     if (!targetModule) return;
 
     const newOrder = targetModule.lessons.length;
-    const newTitle = "New Lesson";
+    const optimisticTitle = "New Lesson";
+    const optimisticId = `temp-lesson-${Date.now()}`;
     
+    // Optimistic UI
+    setModules(prev => prev.map(m => {
+       if (m.id === moduleId) {
+          return {
+             ...m,
+             lessons: [...m.lessons, {
+                id: optimisticId,
+                title: optimisticTitle,
+                description: "Write your lesson content here...",
+                type: "article",
+                duration: "0 mins",
+                status: "draft",
+                muxPlaybackId: ""
+             }]
+          };
+       }
+       return m;
+    }));
+
     try {
-      await createLesson(moduleId, newTitle, newOrder, 'article');
+      await createLesson(moduleId, optimisticTitle, newOrder, 'article');
     } catch (error) {
       console.error(error);
       alert("Failed to create lesson.");
+      // State will self-correct on next revalidation
     }
   };
 

@@ -40,7 +40,8 @@ export async function getAuthenticatedUser() {
   if (user) {
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { lastLogin: new Date() }
+      data: { lastLogin: new Date() },
+      include: { profile: true }
     });
   }
 

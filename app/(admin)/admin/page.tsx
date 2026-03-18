@@ -1,7 +1,8 @@
 import { Users, Inbox, AlertCircle, Clock, ShieldAlert, Megaphone, CheckCircle, GraduationCap } from 'lucide-react';
 import prisma from '@/lib/prisma';
 import Link from 'next/link';
-
+import { getAuthenticatedUser } from '@/lib/auth';
+import AdminHeader from './components/AdminHeader';
 // Helper to calculate 48 hours ago for SLAs
 const getSlaThreshold = () => {
   const d = new Date();
@@ -10,6 +11,9 @@ const getSlaThreshold = () => {
 };
 
 export default async function AdminCommandCenter() {
+  const user = await getAuthenticatedUser();
+  if (!user) return null;
+
   const slaThreshold = getSlaThreshold();
 
   // 1. Fetch Today's Priorities
@@ -56,10 +60,7 @@ export default async function AdminCommandCenter() {
     <div className="p-8 md:p-14 max-w-[1400px] mx-auto text-surface space-y-10 pb-32">
       
       {/* Header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-xl md:text-[22px] font-semibold tracking-[-0.02em] text-surface">Command Center</h1>
-        <p className="text-gray-300 text-[13px] leading-relaxed">Mission control for live cohorts. Prioritize interventions and unblock students.</p>
-      </div>
+      <AdminHeader fullName={user.profile?.fullName || null} email={user.email} />
 
       {/* Section 1: Today's Priorities (Inbox) */}
       <div className="space-y-4">

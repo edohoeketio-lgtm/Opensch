@@ -1,9 +1,12 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { Search, Bell, Settings } from 'lucide-react';
 import { AdminSidebar } from './components/AdminSidebar';
 import { MobileAdminDrawer } from './components/MobileAdminDrawer';
 import { ToastProvider } from '@/app/(portal)/components/ToastContext';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { getNotifications } from '@/app/actions/notifications';
+import NotificationPopover from './admin/components/NotificationPopover';
 
 export default async function AdminLayout({
   children,
@@ -16,6 +19,8 @@ export default async function AdminLayout({
   if (!isAdmin) {
     redirect('/dashboard');
   }
+
+  const { notifications, unreadCount } = await getNotifications(10);
 
   return (
     <ToastProvider>
@@ -43,14 +48,12 @@ export default async function AdminLayout({
                </div>
                
                {/* Notification */}
-               <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-admin-surface transition-colors text-[#AAAAAA] hover:text-surface">
-                  <Bell className="w-4 h-4" />
-               </button>
+               <NotificationPopover initialNotifications={notifications as any} initialUnreadCount={unreadCount} />
 
                {/* Settings */}
-               <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-admin-surface transition-colors text-[#AAAAAA] hover:text-surface">
+               <Link href="/admin/settings" className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-admin-surface transition-colors text-[#AAAAAA] hover:text-surface">
                   <Settings className="w-4 h-4" />
-               </button>
+               </Link>
             </div>
           </header>
 

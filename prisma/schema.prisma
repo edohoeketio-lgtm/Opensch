@@ -31,6 +31,7 @@ model User {
   applicationsReviewed      Application[]     @relation("ApplicationReviewer")
   hostedEvents              Event[]           @relation("EventHost")
   eventRSVPs                EventRSVP[]
+  notifications             Notification[]
 }
 
 model Profile {
@@ -393,4 +394,21 @@ enum RSVPStatus {
   ATTENDING
   MAYBE
   DECLINED
+}
+
+model Notification {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  title     String
+  message   String
+  type      String   @default("info") // 'info', 'alert', 'success', 'warning'
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt(sort: Desc)])
 }
