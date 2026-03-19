@@ -6,6 +6,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
