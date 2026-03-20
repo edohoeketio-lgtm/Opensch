@@ -1,23 +1,54 @@
-import { Settings, Wrench } from 'lucide-react';
+import { getAuthenticatedUser } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import { GlobalSettingsForm } from '@/components/settings/GlobalSettingsForm';
+import { ProfileSettingsForm } from '@/components/settings/ProfileSettingsForm';
+import { Settings } from 'lucide-react';
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const user = await getAuthenticatedUser();
+  if (!user) redirect('/login');
+
+  let content;
+
+  if (user.role === 'ADMIN') {
+    let settings = await prisma.globalSettings.findFirst();
+    if (!settings) {
+       settings = await prisma.globalSettings.create({ data: {} });
+    }
+    content = <GlobalSettingsForm settings={settings} />;
+  } else {
+    // Instructor settings = personal profile & notifications
+    const profile = await prisma.profile.findUnique({
+      where: { userId: user.id }
+    });
+    content = (
+      <div className="space-y-8">
+        <div className="bg-admin-surface border border-admin-border rounded-2xl p-8 max-w-3xl">
+           <ProfileSettingsForm profile={profile} />
+        </div>
+        <div className="bg-admin-surface border border-admin-border rounded-2xl p-8 max-w-3xl">
+           <NotificationSettingsForm profile={profile} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 md:p-14 max-w-[1400px] mx-auto text-surface space-y-10 pb-32 h-full flex flex-col">
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 mb-4">
         <h1 className="text-xl md:text-[22px] font-semibold tracking-[-0.02em] text-surface flex items-center gap-2">
-          Global Settings
+          {user.role === 'ADMIN' ? "Admin Settings" : "Instructor Settings"}
         </h1>
-        <p className="text-gray-300 text-[13px] leading-relaxed">Configure administrative settings, billing, and system preferences.</p>
+        <p className="text-gray-300 text-[13px] leading-relaxed">
+           {user.role === 'ADMIN' 
+             ? "Configure system-wide administrative controls and behaviors." 
+             : "Manage your personal instructor profile and preferences."}
+        </p>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-12 bg-admin-surface border border-admin-border rounded-2xl">
-         <div className="w-16 h-16 rounded-full bg-white/5 border border-admin-border flex items-center justify-center mb-6">
-            <Wrench className="w-8 h-8 text-admin-muted" />
-         </div>
-         <h2 className="text-lg font-semibold text-surface mb-2">Settings are under construction</h2>
-         <p className="text-[13px] text-admin-muted max-w-sm text-center">
-            We are migrating the global settings panel to the new Admin design system. Check back soon.
-         </p>
+      <div className="flex-1">
+        {content}
       </div>
     </div>
   );

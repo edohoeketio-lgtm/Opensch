@@ -8,49 +8,52 @@ datasource db {
 }
 
 model User {
-  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email             String          @unique
-  role              Role            @default(STUDENT)
-  stripeCustomerId  String?         @unique
-  cohortId          String?         @db.Uuid
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-  lastLogin         DateTime?
-  isAdmin           Boolean         @default(false)
-  broadcasts        Broadcast[]
-  coursesInstructed Course[]        @relation("CourseInstructor")
-  enrollments       Enrollment[]
-  messagesSent      Message[]
-  profile           Profile?
-  progressStates    ProgressState[]
-  submissions       Submission[]
-  copilotSessions   CopilotSession[]
-  cohort            Cohort?         @relation("UserCohort", fields: [cohortId], references: [id])
+  id                        String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email                     String            @unique
+  role                      Role              @default(STUDENT)
+  stripeCustomerId          String?           @unique
+  cohortId                  String?           @db.Uuid
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
+  lastLogin                 DateTime?
+  isAdmin                   Boolean           @default(false)
+  broadcasts                Broadcast[]
+  coursesInstructed         Course[]          @relation("CourseInstructor")
+  enrollments               Enrollment[]
+  messagesSent              Message[]
+  profile                   Profile?
+  progressStates            ProgressState[]
+  submissions               Submission[]
+  copilotSessions           CopilotSession[]
+  cohort                    Cohort?           @relation("UserCohort", fields: [cohortId], references: [id])
   interventionsAsStudent    InterventionLog[] @relation("StudentInterventions")
   interventionsAsInstructor InterventionLog[] @relation("InstructorInterventions")
   applicationsReviewed      Application[]     @relation("ApplicationReviewer")
   hostedEvents              Event[]           @relation("EventHost")
   eventRSVPs                EventRSVP[]
   notifications             Notification[]
+  transactions              Transaction[]
+  authoredResources         Resource[]        @relation("ResourceAuthor")
 }
 
 model Profile {
-  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId          String   @unique @db.Uuid
-  fullName        String?
-  username        String?  @unique
-  timezone        String?
-  experienceLevel String?
-  avatarUrl       String?
-  githubHandle    String?
-  linkedinUrl   String?
-  bio           String?
-  motivation    String?
-  activeBadgeId String?
-  isPublic      Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId               String   @unique @db.Uuid
+  fullName             String?
+  username             String?  @unique
+  timezone             String?
+  experienceLevel      String?
+  avatarUrl            String?
+  githubHandle         String?
+  linkedinUrl          String?
+  bio                  String?
+  motivation           String?
+  activeBadgeId        String?
+  notificationSettings Json?
+  isPublic             Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Course {
@@ -66,6 +69,7 @@ model Course {
   instructor   User         @relation("CourseInstructor", fields: [instructorId], references: [id])
   enrollments  Enrollment[]
   modules      Module[]
+
   @@index([instructorId])
 }
 
@@ -85,16 +89,18 @@ model Enrollment {
 }
 
 model Module {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  courseId    String   @db.Uuid
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  courseId    String     @db.Uuid
   title       String
   description String?
   order       Int
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isPublished Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   lessons     Lesson[]
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  resources   Resource[]
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
   @@index([courseId])
 }
 
@@ -115,6 +121,7 @@ model Lesson {
   assignments         Assignment[]
   module              Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progressStates      ProgressState[]
+
   @@index([moduleId])
 }
 
@@ -141,31 +148,32 @@ model Assignment {
   updatedAt               DateTime     @updatedAt
   lesson                  Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   submissions             Submission[]
+
   @@index([lessonId])
 }
 
 model Submission {
-  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  assignmentId      String           @db.Uuid
-  studentId         String           @db.Uuid
-  contentUrlOrCode  String
-  score             Int?
-  aiScore           Int?
-  aiConfidenceScore Int?
-  aiRationale       String?
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assignmentId         String           @db.Uuid
+  studentId            String           @db.Uuid
+  contentUrlOrCode     String
+  score                Int?
+  aiScore              Int?
+  aiConfidenceScore    Int?
+  aiRationale          String?
   aiPrimaryEntrypoints Json?
-  feedback          String?
-  reviewerId        String?          @db.Uuid
-  status            SubmissionStatus @default(PENDING)
-  submittedAt       DateTime         @default(now())
-  aiDraftedAt       DateTime?
-  claimedAt         DateTime?
-  gradedAt          DateTime?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  assignment        Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  student           User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  
+  feedback             String?
+  reviewerId           String?          @db.Uuid
+  status               SubmissionStatus @default(PENDING)
+  submittedAt          DateTime         @default(now())
+  aiDraftedAt          DateTime?
+  claimedAt            DateTime?
+  gradedAt             DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  assignment           Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student              User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
   @@index([assignmentId])
   @@index([studentId])
   @@index([status])
@@ -200,7 +208,7 @@ model Message {
   payload            Json?
   sender             User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   thread             Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  
+
   @@index([threadId])
   @@index([senderId])
 }
@@ -219,7 +227,7 @@ model Broadcast {
   author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
   threadId       String?         @unique @db.Uuid
   thread         Thread?         @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  
+
   @@index([authorId])
   @@index([status])
 }
@@ -252,41 +260,42 @@ model CopilotSession {
 model CopilotMessage {
   id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   sessionId String         @db.Uuid
-  role      String         // 'user', 'assistant', 'system'
+  role      String // 'user', 'assistant', 'system'
   content   String
   createdAt DateTime       @default(now())
   session   CopilotSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+
   @@index([sessionId])
 }
 
 model Cohort {
-  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String
-  description    String?
-  startDate      DateTime
-  endDate        DateTime?
-  status         CohortStatus @default(UPCOMING)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  
-  users          User[]       @relation("UserCohort")
-  events         Event[]
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      CohortStatus @default(UPCOMING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  users        User[]        @relation("UserCohort")
+  events       Event[]
+  transactions Transaction[]
 }
 
 model InterventionLog {
-  id              String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  studentId       String             @db.Uuid
-  instructorId    String             @db.Uuid
-  reason          String
-  actionTaken     String?
-  status          InterventionStatus @default(OPEN)
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  studentId    String             @db.Uuid
+  instructorId String             @db.Uuid
+  reason       String
+  actionTaken  String?
+  status       InterventionStatus @default(OPEN)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
 
-  student         User               @relation("StudentInterventions", fields: [studentId], references: [id], onDelete: Cascade)
-  instructor      User               @relation("InstructorInterventions", fields: [instructorId], references: [id], onDelete: Cascade)
-  
+  student    User @relation("StudentInterventions", fields: [studentId], references: [id], onDelete: Cascade)
+  instructor User @relation("InstructorInterventions", fields: [instructorId], references: [id], onDelete: Cascade)
+
   @@index([studentId])
   @@index([status])
 }
@@ -312,21 +321,22 @@ enum BroadcastStatus {
 }
 
 model Application {
-  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName       String
-  lastName        String
-  email           String            @unique
-  linkedinUrl     String?
-  experience      String?           
-  motivation      String?           
-  status          ApplicationStatus @default(NEW)
-  paymentStatus   PaymentStatus     @default(UNPAID)
-  paystackRef     String?           @unique
-  appliedAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  reviewerId      String?           @db.Uuid
-  reviewer        User?             @relation("ApplicationReviewer", fields: [reviewerId], references: [id])
-  
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName     String
+  lastName      String
+  email         String            @unique
+  linkedinUrl   String?
+  experience    String?
+  motivation    String?
+  status        ApplicationStatus @default(NEW)
+  paymentStatus PaymentStatus     @default(UNPAID)
+  paystackRef   String?           @unique
+  appliedAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reviewerId    String?           @db.Uuid
+  reviewer      User?             @relation("ApplicationReviewer", fields: [reviewerId], references: [id])
+  transactions  Transaction[]
+
   @@index([status])
   @@index([paymentStatus])
 }
@@ -347,36 +357,36 @@ enum PaymentStatus {
 }
 
 model Event {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   description String?
   startTime   DateTime
   endTime     DateTime
-  link        String?      // Zoom/Meet limit
-  type        EventType    @default(OFFICE_HOURS)
-  
-  cohortId    String?      @db.Uuid
-  cohort      Cohort?      @relation(fields: [cohortId], references: [id])
-  
-  hostId      String       @db.Uuid
-  host        User         @relation("EventHost", fields: [hostId], references: [id])
-  
-  rsvps       EventRSVP[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  
+  link        String? // Zoom/Meet limit
+  type        EventType @default(OFFICE_HOURS)
+
+  cohortId String? @db.Uuid
+  cohort   Cohort? @relation(fields: [cohortId], references: [id])
+
+  hostId String @db.Uuid
+  host   User   @relation("EventHost", fields: [hostId], references: [id])
+
+  rsvps     EventRSVP[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
   @@index([cohortId])
   @@index([hostId])
 }
 
 model EventRSVP {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String       @db.Uuid
-  user        User         @relation(fields: [userId], references: [id])
-  eventId     String       @db.Uuid
-  event       Event        @relation(fields: [eventId], references: [id])
-  status      RSVPStatus   @default(ATTENDING)
-  createdAt   DateTime     @default(now())
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id])
+  eventId   String     @db.Uuid
+  event     Event      @relation(fields: [eventId], references: [id])
+  status    RSVPStatus @default(ATTENDING)
+  createdAt DateTime   @default(now())
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -411,4 +421,79 @@ model Notification {
   @@index([userId])
   @@index([isRead])
   @@index([createdAt(sort: Desc)])
+}
+
+model GlobalSettings {
+  id                          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  platformName                String   @default("OpenSch")
+  supportEmail                String   @default("support@opensch.com")
+  allowStudentRegistration    Boolean  @default(true)
+  allowInstructorRegistration Boolean  @default(false)
+  enforceMfa                  Boolean  @default(false)
+  requireProfileCompletion    Boolean  @default(true)
+  maintenanceMode             Boolean  @default(false)
+  currentCohortWeek           Int      @default(1)
+  updatedByUserId             String?  @db.Uuid
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}
+
+model Transaction {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  amount          Int // stored in lowest denominator (e.g. kobo/cents)
+  currency        String            @default("NGN")
+  reference       String            @unique
+  status          TransactionStatus @default(PENDING)
+  paymentProvider String            @default("paystack")
+
+  applicationId String?      @db.Uuid
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  userId String? @db.Uuid
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  cohortId String? @db.Uuid
+  cohort   Cohort? @relation(fields: [cohortId], references: [id], onDelete: SetNull)
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reference])
+  @@index([status])
+  @@index([cohortId])
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model Resource {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?      @db.Text
+  url         String
+  type        ResourceType @default(ARTICLE)
+
+  moduleId String? @db.Uuid
+  module   Module? @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+
+  authorId String @db.Uuid
+  author   User   @relation("ResourceAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([moduleId])
+}
+
+enum ResourceType {
+  VIDEO
+  ARTICLE
+  TOOL
 }

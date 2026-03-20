@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { getAvatarColor } from '@/lib/utils';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { ThreadReplies } from './ThreadReplies';
 import { PostFooterActions } from './PostFooterActions';
 import { InteractivePoll } from '../InteractivePoll';
@@ -21,6 +22,9 @@ export default async function ThreadViewPage({ params }: { params: Promise<{ pos
   const resolvedParams = await params;
   const { postId } = resolvedParams;
 
+  const currentUser = await getAuthenticatedUser();
+  const isAdmin = currentUser?.role === 'ADMIN';
+
     let post: any = null;
   let initialComments: any[] = [];
   let Icon: any = null;
@@ -35,9 +39,12 @@ export default async function ThreadViewPage({ params }: { params: Promise<{ pos
     }
   });
 
+  let canDeleteThread = false;
+
   if (dbThread && dbThread.messages.length > 0) {
     const opMessage = dbThread.messages[0];
     const opAuthor = opMessage.sender;
+    canDeleteThread = isAdmin || opAuthor.id === currentUser?.id;
     const opPayload = opMessage.payload as any || {};
     const typeMeta = CATEGORY_META_MAP[dbThread.category] || CATEGORY_META_MAP['General'];
     Icon = typeMeta.icon || MessageSquare;
@@ -74,7 +81,10 @@ export default async function ThreadViewPage({ params }: { params: Promise<{ pos
         role: author.role === 'INSTRUCTOR' ? 'Instructor' : 'Student',
         initial: (author as any).name?.[0]?.toUpperCase() || author.email?.[0]?.toUpperCase() || 'U',
         time: new Date(msg.createdAt).toLocaleDateString(),
-        content: msg.content
+        content: msg.content,
+        canDelete: isAdmin || author.id === currentUser?.id,
+        upvotes: msg.upvotes || 0,
+        hasVoted: false
       };
     });
   } else {
@@ -251,12 +261,12 @@ export default async function ThreadViewPage({ params }: { params: Promise<{ pos
                 </div>
               )}
               {post.poll && (
-                <InteractivePoll question={post.poll.question} options={post.poll.options} isFeedView={false} />
+                <InteractivePoll question={post.poll.question} options={post.poll.options} isFeedView={false} threadId={post.threadId || post.id} />
               )}
 
               {/* OP Footer Actions */}
               <div className="mt-8">
-                <PostFooterActions upvotes={post.upvotes} hasVoted={post.hasVoted} repliesCount={initialComments.length} />
+                <PostFooterActions threadId={post.threadId || post.id} upvotes={post.upvotes} hasVoted={post.hasVoted} repliesCount={initialComments.length} canDelete={canDeleteThread} />
               </div>
             </div>
           </div>

@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronUp, ChevronDown, MessageSquare, Video, Link as LinkIcon, BookOpen, Target, Award, CheckCircle2, HelpCircle, Image as ImageIcon, MoreHorizontal, Code, Github, BarChart2, X, Loader2 } from 'lucide-react';
 import { useToast } from '../components/ToastContext';
-import { createFeedPost } from '@/app/actions/threads';
+import { createFeedPost, incrementThreadUpvote } from '@/app/actions/threads';
+import { getMyProfile } from '@/app/actions/settings';
 import { getAvatarColor } from '@/lib/utils';
 import { InteractivePoll } from './InteractivePoll';
 
@@ -59,10 +60,23 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
   const [postImage, setPostImage] = useState<string | null>(null);
   const [postVideo, setPostVideo] = useState<string | null>(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     setItems(initialItems);
   }, [initialItems]);
+
+  useEffect(() => {
+    const fetchProfile = () => {
+      getMyProfile().then(p => {
+        if (p) setProfile(p);
+      });
+    };
+
+    fetchProfile();
+    window.addEventListener('profileUpdated', fetchProfile);
+    return () => window.removeEventListener('profileUpdated', fetchProfile);
+  }, []);
   
   // Extra specific composer states
   const [isAddingCode, setIsAddingCode] = useState(false);
@@ -100,17 +114,43 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
   
   const TABS = ['All Activity', 'Questions', 'Deliverables', 'Announcements', 'Peer Review', 'Wins'];
 
-  const toggleEndorse = (itemId: string) => {
+  const toggleEndorse = async (itemId: string) => {
+    // Find item
+    const target = items.find(i => i.id === itemId);
+    if (!target || target.hasEndorsed) return; // Prevent double voting
+
+    // Optimistic update
     setItems(items.map(item => {
       if (item.id === itemId) {
         return { 
           ...item, 
-          endorsements: item.hasEndorsed ? item.endorsements - 1 : item.endorsements + 1, 
-          hasEndorsed: !item.hasEndorsed 
+          endorsements: item.endorsements + 1, 
+          hasEndorsed: true 
         };
       }
       return item;
     }));
+
+    try {
+      const res = await incrementThreadUpvote(itemId);
+      if (!res.success) {
+         // Revert on failure
+         setItems(items.map(item => {
+            if (item.id === itemId) {
+              return { ...item, endorsements: item.endorsements - 1, hasEndorsed: false };
+            }
+            return item;
+         }));
+         toast({ message: res.error || "Failed to endorse", type: "error" });
+      }
+    } catch {
+         setItems(items.map(item => {
+            if (item.id === itemId) {
+              return { ...item, endorsements: item.endorsements - 1, hasEndorsed: false };
+            }
+            return item;
+         }));
+    }
   };
 
   const filteredItems = items.filter(item => {
@@ -230,7 +270,11 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
             onClick={() => setIsComposing(true)}
           >
             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-[#2D2D2D] bg-[#1C1C1E] flex items-center justify-center">
-              <span className="text-[#FFFFFF] font-bold text-sm">M</span>
+              {profile?.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+              ) : (
+                <span className="text-[#FFFFFF] font-bold text-sm">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
+              )}
             </div>
             <span className="text-[#525252] text-[18px] sm:text-[20px]">What's on your mind?</span>
           </div>
@@ -243,9 +287,13 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[#2D2D2D] bg-[#1C1C1E] flex items-center justify-center">
-                  <span className="text-[#FFFFFF] font-bold text-xs">M</span>
+                  {profile?.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+                  ) : (
+                    <span className="text-[#FFFFFF] font-bold text-xs">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
-                <span className="text-[#FFFFFF] font-medium text-[15px]">Maurice Edohoeket</span>
+                <span className="text-[#FFFFFF] font-medium text-[15px]">{profile?.fullName || 'Scholar'}</span>
               </div>
               <button className="text-[14px] font-semibold text-[#8A8A8A] hover:text-[#FFFFFF] transition-colors">
                 Drafts
@@ -501,7 +549,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                          </div>
                        )}
                        {item.poll && (
-                         <InteractivePoll question={item.poll.question} options={item.poll.options} isFeedView={true} />
+                         <InteractivePoll question={item.poll.question} options={item.poll.options} isFeedView={true} threadId={item.id} />
                        )}
                      </Link>
 
@@ -518,6 +566,17 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                            <MessageSquare className="w-4 h-4" />
                            {item.repliesCount} {item.repliesCount === 1 ? 'Reply' : 'Replies'}
                         </Link>
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigator.clipboard.writeText(`${window.location.origin}/feed/${item.id}`);
+                            toast({ message: "Link copied", type: "success" });
+                          }}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-[#888888] hover:text-[#FFFFFF] transition-colors group ml-auto"
+                        >
+                          <LinkIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                          Copy Link
+                        </button>
                      </div>
                    </div>
                 </div>

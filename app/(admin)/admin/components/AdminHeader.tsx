@@ -1,13 +1,13 @@
 "use client";
 
-import { useTimeGreeting, extractLastName } from "@/lib/utils/time";
+import { useTimeGreeting, extractFirstName } from "@/lib/utils/time";
 
 export default function AdminHeader({ fullName, email }: { fullName: string | null, email: string }) {
-  const lastName = extractLastName(fullName);
-  const greeting = useTimeGreeting(lastName);
+  const firstName = extractFirstName(fullName);
+  const greeting = useTimeGreeting(firstName);
 
   // Derive initials for the avatar
-  const initials = fullName 
+  const initials = fullName
     ? fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
     : email.substring(0, 2).toUpperCase();
 
