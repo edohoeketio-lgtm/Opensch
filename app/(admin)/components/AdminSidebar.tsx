@@ -16,7 +16,8 @@ import {
   Calendar,
   ChevronRight, 
   ChevronLeft, 
-  LogOut
+  LogOut,
+  Wallet
 } from "lucide-react";
 
 export function AdminSidebar() {
@@ -29,8 +30,10 @@ export function AdminSidebar() {
     { name: "Student Roster", href: "/admin/roster", icon: Users },
     { name: "Admissions Pipeline", href: "/admin/admissions", icon: ClipboardList },
     { name: "Live Ops HQ", href: "/admin/live-ops", icon: Calendar },
+    { name: "Cohort Revenue", href: "/admin/revenue", icon: Wallet },
     { name: "Broadcasts", href: "/admin/broadcasts", icon: Bell },
     { name: "Faculty Invites", href: "/admin/instructors", icon: Mail },
+    { name: "Resources", href: "/admin/resources", icon: Video },
     { name: "Analytics", href: "/admin/analytics", icon: BarChart },
     { name: "Settings", href: "/admin/settings", icon: Settings },
   ];

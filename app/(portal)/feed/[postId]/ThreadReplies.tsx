@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from 'react';
-import { ChevronUp, ChevronDown, MessageSquare, BookOpen, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { ChevronUp, ChevronDown, MessageSquare, BookOpen, Link as LinkIcon, Loader2, Trash2 } from 'lucide-react';
 import { getAvatarColor } from '@/lib/utils';
-import { replyToThread } from '@/app/actions/threads';
+import { replyToThread, deleteReply } from '@/app/actions/threads';
+import { DeleteModal } from './DeleteModal';
+import { useToast } from '../../components/ToastContext';
 
 export type CommentType = {
   id: string;
@@ -16,6 +18,7 @@ export type CommentType = {
   content: string;
   upvotes: number;
   hasVoted: boolean;
+  canDelete?: boolean;
 };
 
 interface ThreadRepliesProps {
@@ -27,6 +30,10 @@ export function ThreadReplies({ initialComments, threadId }: ThreadRepliesProps)
   const [comments, setComments] = useState<CommentType[]>(initialComments);
   const [globalReplyText, setGlobalReplyText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedReplyId, setSelectedReplyId] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const handleGlobalReply = async () => {
     if (!globalReplyText.trim() || isSubmitting) return;
@@ -40,13 +47,13 @@ export function ThreadReplies({ initialComments, threadId }: ThreadRepliesProps)
       });
 
       if (!response.success) {
-        console.error("Failed to reply:", response.error);
-        setIsSubmitting(false);
-        return;
+         toast({ message: response.error || "Failed to post reply", type: "error" });
+         setIsSubmitting(false);
+         return;
       }
 
       const newComment: CommentType = {
-        id: Date.now().toString(),
+        id: Date.now().toString(), // Will be overwritten on refresh
         author: "You",
         role: "Student",
         avatarChar: "Y",
@@ -56,15 +63,32 @@ export function ThreadReplies({ initialComments, threadId }: ThreadRepliesProps)
         content: globalReplyText,
         upvotes: 0,
         hasVoted: false,
+        canDelete: true
       };
 
       setComments([...comments, newComment]);
       setGlobalReplyText("");
-    } catch (error) {
-       console.error(error);
+    } catch (error: any) {
+       toast({ message: error?.message || "Something went wrong", type: "error" });
     } finally {
        setIsSubmitting(false);
     }
+  };
+
+  const executeDelete = () => {
+    if (!selectedReplyId) return;
+    setIsDeleteModalOpen(false);
+
+    startTransition(async () => {
+      const res = await deleteReply(selectedReplyId);
+      if (res.success) {
+        toast({ message: "Reply deleted", type: "success" });
+        setComments(comments.filter(c => c.id !== selectedReplyId));
+      } else {
+        toast({ message: res.error || "Failed to delete reply", type: "error" });
+      }
+      setSelectedReplyId(null);
+    });
   };
 
   const toggleVote = (commentId: string, direction: 'up' | 'down') => {
@@ -116,7 +140,20 @@ export function ThreadReplies({ initialComments, threadId }: ThreadRepliesProps)
                      <span className="text-[15px] font-bold text-[#FFFFFF] tracking-tight">{comment.author}</span>
                      <span className={`px-1.5 py-[2px] rounded ${comment.bg} border border-[#2D2D2D] text-[9px] font-bold uppercase tracking-widest ${comment.color}`}>{comment.role}</span>
                   </div>
-                  <span className="text-xs text-[#888888] font-medium">{comment.time}</span>
+                  <div className="flex items-center gap-3">
+                     {comment.canDelete && (
+                        <button 
+                           onClick={() => {
+                              setSelectedReplyId(comment.id);
+                              setIsDeleteModalOpen(true);
+                           }} 
+                           className="text-rose-500/50 hover:text-rose-500 transition-colors"
+                        >
+                           <Trash2 className="w-4 h-4" />
+                        </button>
+                     )}
+                     <span className="text-xs text-[#888888] font-medium">{comment.time}</span>
+                  </div>
                </div>
                
                <div className="prose prose-invert max-w-none text-[15px] mb-4 leading-relaxed [&>p]:text-[#D1D5DB]">
@@ -176,6 +213,12 @@ export function ThreadReplies({ initialComments, threadId }: ThreadRepliesProps)
           </div>
         </div>
       </div>
+
+      <DeleteModal 
+        isOpen={isDeleteModalOpen} 
+        onClose={() => setIsDeleteModalOpen(false)} 
+        onConfirm={executeDelete} 
+      />
     </>
   );
 }
