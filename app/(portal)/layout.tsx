@@ -3,18 +3,31 @@
 import { useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Bell, X, Target, BookOpen, MessageSquare, Award } from 'lucide-react';
+import { Search, Bell, X, Target, BookOpen, MessageSquare, Award, AlertCircle, CheckCircle, Info, BellRing } from 'lucide-react';
 import { CmdKPalette } from '../components/CmdKPalette';
 import { Sidebar } from './components/Sidebar';
 import { ToastProvider } from './components/ToastContext';
+import { getMyProfile } from '@/app/actions/settings';
+import { getNotifications, markNotificationRead, markAllNotificationsRead } from '@/app/actions/notifications';
 
-// Mock Notification Data based on architecture
-const MOCK_NOTIFICATIONS = [
-  { id: 1, type: 'content', icon: BookOpen, title: 'New Module Released', message: "The 'Data Layer' module is now available.", time: '2m ago', unread: true, color: 'text-[#B08D57]', bg: 'bg-[#B08D57]/10', href: '/curriculum' },
-  { id: 2, type: 'admin', icon: Target, title: 'Deliverable Graded', message: "Your 'OAuth Flow' deliverable has been reviewed.", time: '1h ago', unread: true, color: 'text-[#2E8B6C]', bg: 'bg-[#2E8B6C]/10', href: '/portfolio' },
-  { id: 3, type: 'social', icon: MessageSquare, title: 'Peer Reply', message: "Sarah replied to your question about middleware.", time: '3h ago', unread: false, color: 'text-[#FFFFFF]', bg: 'bg-white/5', href: '/feed' },
-  { id: 4, type: 'system', icon: Award, title: 'Platform Update', message: "We've shipped the new Portfolio layout. Check it out.", time: '1d ago', unread: false, color: 'text-[#FFFFFF]', bg: 'bg-white/5', href: '/portfolio' },
-];
+const formatNotifTime = (date: Date) => {
+  const diffInMinutes = Math.floor((new Date().getTime() - date.getTime()) / 60000);
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays}d ago`;
+};
+
+const getTypeConfig = (type: string) => {
+  switch (type) {
+    case 'warning': return { icon: AlertCircle, color: 'text-[#B08D57]', bg: 'bg-[#B08D57]/10' };
+    case 'success': return { icon: CheckCircle, color: 'text-[#2E8B6C]', bg: 'bg-[#2E8B6C]/10' };
+    case 'alert': return { icon: BellRing, color: 'text-[#EF4444]', bg: 'bg-[#EF4444]/10' };
+    default: return { icon: Info, color: 'text-[#FFFFFF]', bg: 'bg-white/5' };
+  }
+};
 
 export default function PortalLayout({
   children,
@@ -28,16 +41,64 @@ export default function PortalLayout({
   }
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [profile, setProfile] = useState<any>(null);
 
-  const markAllRead = () => {
+  useEffect(() => {
+    const fetchProfile = () => {
+      getMyProfile().then(p => {
+        if (p) setProfile(p);
+      });
+    };
+
+    const fetchNotifs = async () => {
+      try {
+        const res = await getNotifications(10);
+        setNotifications(res.notifications.map((n: any) => {
+           const typeConfig = getTypeConfig(n.type);
+           return {
+             id: n.id,
+             title: n.title,
+             message: n.message,
+             time: formatNotifTime(new Date(n.createdAt)),
+             unread: !n.isRead,
+             icon: typeConfig.icon,
+             color: typeConfig.color,
+             bg: typeConfig.bg,
+             href: n.link || '#'
+           }
+        }));
+        setUnreadCount(res.unreadCount);
+      } catch (e) { console.error("Could not load notifications", e); }
+    };
+
+    fetchProfile();
+    fetchNotifs();
+    window.addEventListener('profileUpdated', fetchProfile);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', fetchProfile);
+    };
+  }, []);
+
+  const handleMarkAllRead = async () => {
     setNotifications(notifications.map(n => ({ ...n, unread: false })));
+    setUnreadCount(0);
+    try {
+      await markAllNotificationsRead();
+    } catch(e) {}
   };
 
-  const handleNotificationClick = (id: number) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, unread: false } : n));
+  const handleNotificationClick = async (id: string, currentlyUnread: boolean) => {
     setShowNotifications(false);
+    if (!currentlyUnread) return;
+    
+    setNotifications(notifications.map(n => n.id === id ? { ...n, unread: false } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+    try {
+      await markNotificationRead(id);
+    } catch(e) {}
   };
 
   // Function to manually trigger CmdK palette via custom event
@@ -91,7 +152,7 @@ export default function PortalLayout({
                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#2D2D2D] bg-white/[0.02]">
                      <h3 className="text-[13px] font-semibold text-[#FFFFFF]">Notifications</h3>
                      {unreadCount > 0 && (
-                       <button onClick={markAllRead} className="text-[11px] font-medium text-[#888888] hover:text-[#FFFFFF] transition-colors">
+                       <button onClick={markAllNotificationsRead} className="text-[11px] font-medium text-[#888888] hover:text-[#FFFFFF] transition-colors">
                          Mark all read
                        </button>
                      )}
@@ -103,7 +164,7 @@ export default function PortalLayout({
                            <Link 
                              key={notif.id} 
                              href={notif.href}
-                             onClick={() => handleNotificationClick(notif.id)}
+                             onClick={() => handleNotificationClick(notif.id, notif.unread)}
                              className={`p-4 flex gap-3 hover:bg-white/[0.02] transition-colors cursor-pointer relative block ${notif.unread ? 'bg-white/[0.01]' : ''}`}
                            >
                              {notif.unread && <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#B08D57]" />}
@@ -134,8 +195,12 @@ export default function PortalLayout({
              </div>
              
              {/* Minimal Profile Escape Hatch */}
-             <Link href="/settings" className="w-8 h-8 rounded-full bg-[#1C1C1E] overflow-hidden relative cursor-pointer border border-[#2D2D2D] hover:border-[#2D2D2D] transition-all duration-300">
-                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent" alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+             <Link href="/settings" className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1C1C1E] overflow-hidden relative cursor-pointer border border-[#2D2D2D] hover:border-[#2D2D2D] transition-all duration-300">
+                {profile?.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+                ) : (
+                  <span className="text-[10px] font-semibold text-[#888888]">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
+                )}
              </Link>
           </div>
         </header>

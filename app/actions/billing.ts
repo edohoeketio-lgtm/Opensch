@@ -55,6 +55,19 @@ export async function createPaystackSession(applicationId: string, amountKobo: n
     }
   });
 
+  // Create explicit Transaction ledger row (PENDING)
+  await prisma.transaction.create({
+    data: {
+      amount: amountKobo,
+      currency: "NGN",
+      reference: parsed.data.reference,
+      status: "PENDING",
+      paymentProvider: "paystack",
+      applicationId: application.id,
+      userId: user.id
+    }
+  });
+
   return {
     authorizationUrl: parsed.data.authorization_url,
     reference: parsed.data.reference
