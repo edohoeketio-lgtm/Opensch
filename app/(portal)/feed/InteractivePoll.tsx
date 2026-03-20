@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { BarChart2 } from 'lucide-react';
 import { useToast } from '../components/ToastContext';
+import { submitPollVote } from '@/app/actions/threads';
 
 interface PollProps {
   question: string;
   options: { text: string; votes?: number }[];
   isFeedView?: boolean;
+  threadId?: string;
 }
 
-export function InteractivePoll({ question, options, isFeedView = false }: PollProps) {
+export function InteractivePoll({ question, options, isFeedView = false, threadId }: PollProps) {
   const { toast } = useToast();
   const [hasVoted, setHasVoted] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const totalVotes = options.reduce((sum, opt) => sum + (opt.votes || 0), 0) + (hasVoted ? 1 : 0);
 
@@ -23,11 +26,27 @@ export function InteractivePoll({ question, options, isFeedView = false }: PollP
       e.stopPropagation();
     }
     
-    if (hasVoted) return;
+    if (hasVoted || isPending) return;
 
+    // Optimistic update
     setHasVoted(true);
     setSelectedIdx(idx);
-    toast({ message: "Vote recorded!", type: "success" });
+    
+    if (threadId) {
+       startTransition(async () => {
+         const res = await submitPollVote(threadId, idx);
+         if (!res.success) {
+           toast({ message: res.error || "Failed to submit vote.", type: "error" });
+           // Revert state on failure
+           setHasVoted(false);
+           setSelectedIdx(null);
+         } else {
+           toast({ message: "Vote recorded!", type: "success" });
+         }
+       });
+    } else {
+       toast({ message: "Vote recorded locally (Preview)", type: "success" });
+    }
   };
 
   return (

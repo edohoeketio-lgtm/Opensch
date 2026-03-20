@@ -35,11 +35,17 @@ export async function POST(req: Request) {
          return NextResponse.json({ status: "ignored" });
       }
 
-      // Upgrade Status
-      await prisma.application.update({
-        where: { id: application.id },
-        data: { paymentStatus: 'FULLY_PAID' }
-      });
+      // Upgrade Status and Reconcile Transaction
+      await prisma.$transaction([
+        prisma.application.update({
+          where: { id: application.id },
+          data: { paymentStatus: "FULLY_PAID" }
+        }),
+        prisma.transaction.update({
+          where: { reference },
+          data: { status: "SUCCESS", amount: amount }
+        })
+      ]);
 
       // Directly port their student profile (assuming cohort selection is handled inside logic or deferred)
       // Since it's automated, we might drop them in an unassigned state or a default pool for instructors to finalize assigning

@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
  * Returns a hydration-safe greeting based on the user's local time.
  * Falls back to a generic greeting during SSR to prevent hydration errors.
  */
-export function useTimeGreeting(lastName: string | null | undefined): string {
+export function useTimeGreeting(firstName: string | null | undefined): string {
   const [greeting, setGreeting] = useState("Welcome back");
 
   useEffect(() => {
@@ -18,21 +18,18 @@ export function useTimeGreeting(lastName: string | null | undefined): string {
       timePhrase = "Good afternoon";
     }
 
-    const nameStr = lastName ? `, ${lastName}` : "";
+    const nameStr = firstName ? `, ${firstName}` : "";
     setGreeting(`${timePhrase}${nameStr}`);
-  }, [lastName]);
+  }, [firstName]);
 
   return greeting;
 }
 
 /**
- * Parses a full name into a last name. If only one name is provided, uses that.
+ * Parses a full name into a first name.
  */
-export function extractLastName(fullName: string | null | undefined): string | null {
+export function extractFirstName(fullName: string | null | undefined): string | null {
   if (!fullName) return null;
   const parts = fullName.trim().split(" ");
-  if (parts.length > 1) {
-    return parts[parts.length - 1];
-  }
   return parts[0];
 }

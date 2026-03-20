@@ -1,18 +1,36 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, MessageSquare, Briefcase, ChevronRight, CheckCircle, ChevronLeft, Award, Calendar } from 'lucide-react';
+import { Home, BookOpen, MessageSquare, Briefcase, ChevronRight, CheckCircle, ChevronLeft, Award, Calendar, Bookmark } from 'lucide-react';
+import { getMyProfile } from '@/app/actions/settings';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [profile, setProfile] = useState<{ fullName: string | null, avatarUrl: string | null, role: string } | null>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchProfile = () => {
+      getMyProfile().then(p => {
+        if (p) setProfile(p);
+      });
+    };
+
+    fetchProfile();
+    window.addEventListener('profileUpdated', fetchProfile);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', fetchProfile);
+    };
+  }, []);
 
   const navItems = [
     { name: 'Overview', href: '/dashboard', icon: Home },
     { name: 'Live Calendar', href: '/calendar', icon: Calendar },
     { name: 'Curriculum', href: '/curriculum', icon: BookOpen },
+    { name: 'Knowledge Vault', href: '/resources', icon: Bookmark },
     { name: 'Campus Feed', href: '/feed', icon: MessageSquare },
     { name: 'My Portfolio', href: '/portfolio', icon: Award },
   ];
@@ -69,14 +87,16 @@ export function Sidebar() {
          <Link href="/settings" className={`block p-4 rounded-2xl bg-transparent border border-[#2D2D2D] hover:bg-white/5 transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-[#1C1C1E] overflow-hidden relative border border-[#2D2D2D] shrink-0">
-                  <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent" alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />
+                  <img src={profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent"} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />
                </div>
                {!isCollapsed && (
                  <div className="flex flex-col whitespace-nowrap">
-                    <span className="text-sm font-medium text-[#FFFFFF]/90 group-hover:text-[#FFFFFF] transition-colors tracking-tight">Maurice E.</span>
+                    <span className="text-sm font-medium text-[#FFFFFF]/90 group-hover:text-[#FFFFFF] transition-colors tracking-tight">
+                      {profile?.fullName ? `${profile.fullName.split(' ')[0]} ${profile.fullName.split(' ').slice(1).join(' ').charAt(0) ? profile.fullName.split(' ').slice(1).join(' ').charAt(0) + '.' : ''}`.trim() : "Scholar"}
+                    </span>
                     <div className="flex items-center gap-1.5 mt-0.5">
                        <CheckCircle className="w-3.5 h-3.5 text-[#B08D57]" />
-                       <span className="text-[10px] text-[#888888] font-semibold tracking-[0.1em] uppercase">Premium</span>
+                       <span className="text-[10px] text-[#888888] font-semibold tracking-[0.1em] uppercase">{profile?.role || "Premium"}</span>
                     </div>
                  </div>
                )}
