@@ -10,7 +10,7 @@ export async function inviteInstructor(email: string) {
     if (!user) {
       return { error: 'Auth Context Lost: Could not identify session via cookies. Please refresh.' };
     }
-    if (user.role !== 'ADMIN') {
+    if (user.role !== 'ADMIN' && user.role !== 'INSTRUCTOR') {
       return { error: `Permission Denied: Current role is ${user.role}` };
     }
 
