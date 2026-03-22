@@ -207,12 +207,6 @@ export default function PortalLayout({
                 )}
              </Link>
 
-             {/* Help & Support (Desktop Only) */}
-             <Link href="/help" className="hidden md:flex flex-col items-center justify-center px-3 py-1.5 rounded-xl border border-[#2D2D2D] bg-white/5 text-xs font-medium cursor-pointer hover:bg-white/10 hover:border-[#2D2D2D] transition-all duration-300 text-[#FFFFFF]">
-                <div className="font-medium text-xs text-[#FFFFFF]">Help & Support</div>
-                <div className="text-[10px] text-[#A0A0A0]">Docs & Assistance</div>
-             </Link>
-            
             {/* Mobile Header Menu (Settings / Logout) */}
             <div className="md:hidden relative flex items-center group">
                <button className="w-8 h-8 rounded-full bg-[#1C1C1E] flex items-center justify-center border border-[#2D2D2D] overflow-hidden">
