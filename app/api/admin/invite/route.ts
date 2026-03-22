@@ -40,9 +40,33 @@ export async function POST(req: Request) {
       });
     }
 
-    // Generate mock magic link (in a real app, this connects to Supabase Admin Auth)
+    // Generate real magic link via Supabase Admin API
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY environment variable. Required for admin invite generation.' }, { status: 500 });
+    }
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
-    const magicLink = `${siteUrl}/api/auth/mock-magic-link?email=${encodeURIComponent(email)}&redirect=/onboarding/faculty`;
+    
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: email,
+      options: {
+        redirectTo: `${siteUrl}/onboarding/faculty`
+      }
+    });
+
+    if (linkError || !linkData?.properties?.action_link) {
+      console.error('Supabase generateLink error:', linkError);
+      return NextResponse.json({ error: 'Failed to generate secure invite link from Supabase' }, { status: 500 });
+    }
+
+    const magicLink = linkData.properties.action_link;
 
     return NextResponse.json({ 
       success: true, 
