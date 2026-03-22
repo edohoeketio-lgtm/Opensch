@@ -231,7 +231,18 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
               {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               {isPending ? "Saving..." : "Save Changes"}
             </button>
-            {isPending && <span className="text-sm font-medium text-admin-muted animate-pulse">Syncing...</span>}
+
+            <button 
+              type="button" 
+              onClick={() => {
+                import('@/app/actions/auth').then(m => m.logOut());
+              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-[0.1em] transition-all border border-red-500/20 hover:border-red-500/30"
+            >
+              Sign Out
+            </button>
+
+            {isPending && <span className="text-sm font-medium text-admin-muted animate-pulse ml-2">Syncing...</span>}
           </div>
         </form>
       </div>

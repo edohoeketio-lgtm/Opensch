@@ -104,19 +104,6 @@ export function Sidebar() {
             </div>
             {!isCollapsed && <ChevronRight className="w-4 h-4 text-[#888888] group-hover:text-[#B08D57] transition-colors shrink-0" />}
          </Link>
-
-         {/* Extracted Logout Button */}
-         <button
-           onClick={() => {
-             import('@/app/actions/auth').then(m => m.logOut());
-           }}
-           className={`w-full flex items-center justify-center gap-3 py-2 rounded-xl transition-all duration-300 text-[#525252] hover:bg-red-500/10 hover:text-red-400 group border border-transparent hover:border-red-500/20 ${isCollapsed ? 'px-0' : 'px-3'}`}
-         >
-           <svg className="w-4 h-4 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-           </svg>
-           {!isCollapsed && <span className="font-semibold text-xs tracking-wide whitespace-nowrap">Sign Out</span>}
-         </button>
       </div>
     </aside>
   );
