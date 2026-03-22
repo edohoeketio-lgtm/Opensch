@@ -1,7 +1,10 @@
 import prisma from '@/lib/prisma';
 import InstructorsClient, { UI_Instructor } from './InstructorsClient';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export default async function FacultyManagementPage() {
+  const user = await getAuthenticatedUser();
+  const canInvite = user?.role === 'ADMIN';
   const facultyRecords = await prisma.user.findMany({
     where: {
       role: { in: ['INSTRUCTOR', 'ADMIN'] }
@@ -49,5 +52,5 @@ export default async function FacultyManagementPage() {
     };
   });
 
-  return <InstructorsClient faculty={uiFaculty} />;
+  return <InstructorsClient faculty={uiFaculty} canInvite={canInvite} />;
 }

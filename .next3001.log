@@ -145,3 +145,5 @@ Invalid input value: invalid input syntax for type uuid: "mock-instructor-id"
  ✓ Compiled in 138ms
  ✓ Compiled middleware in 1ms
  ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
+ ✓ Compiled middleware in 1ms
