@@ -67,7 +67,7 @@ export async function POST(req: Request) {
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
     
     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${siteUrl}/auth/callback?next=/onboarding`
+      redirectTo: `${siteUrl}/welcome`
     });
 
     if (inviteError) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Save, Camera, Github, Linkedin, Loader2 } from 'lucide-react';
+import { Save, Camera, Github, Linkedin, Loader2, LogOut } from 'lucide-react';
 import { useState, useTransition, useRef } from 'react';
 import { updateProfile } from '@/app/actions/settings';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,7 @@ import { AvatarCropModal } from './AvatarCropModal';
 
 export function ProfileSettingsForm({ profile }: { profile: any }) {
   const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>(profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent");
@@ -234,12 +235,15 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
 
             <button 
               type="button" 
+              disabled={isSigningOut}
               onClick={() => {
+                setIsSigningOut(true);
                 import('@/app/actions/auth').then(m => m.logOut());
               }}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-[0.1em] transition-all border border-red-500/20 hover:border-red-500/30"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold uppercase tracking-[0.1em] transition-all border border-red-500/20 hover:border-red-500/30 disabled:opacity-50"
             >
-              Sign Out
+              {isSigningOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+              {isSigningOut ? "Signing Out..." : "Sign Out"}
             </button>
 
             {isPending && <span className="text-sm font-medium text-admin-muted animate-pulse ml-2">Syncing...</span>}
