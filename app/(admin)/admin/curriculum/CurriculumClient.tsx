@@ -43,6 +43,8 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
   const [isDeletingLesson, setIsDeletingLesson] = useState<string | null>(null);
   const [isDeletingModule, setIsDeletingModule] = useState<string | null>(null);
   const [isDeletingSection, setIsDeletingSection] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadRequest, setUploadRequest] = useState<XMLHttpRequest | null>(null);
 
   // Sync state with server action revalidation updates
   useEffect(() => {
@@ -108,11 +110,36 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
       const fileExt = file.name.split('.').pop() || 'mp4';
       const fileName = `lesson-${editingLesson.id}-${Date.now()}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage.from('Videos').upload(fileName, file, { upsert: true });
-      
-      if (uploadError) {
-        throw new Error("Supabase Storage Error: " + uploadError.message + " (Do you have a 'Videos' bucket created?)");
-      }
+      const { data: { session } } = await supabase.auth.getSession();
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        setUploadRequest(xhr);
+        
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error("Supabase Storage Error: " + xhr.statusText));
+        });
+
+        xhr.addEventListener("error", () => reject(new Error("Network Error occurred.")));
+        xhr.addEventListener("abort", () => reject(new Error("Upload cancelled by user.")));
+
+        xhr.open("POST", `${supabaseUrl}/storage/v1/object/Videos/${fileName}`);
+        xhr.setRequestHeader("apikey", anonKey);
+        xhr.setRequestHeader("Authorization", `Bearer ${session?.access_token || anonKey}`);
+        xhr.setRequestHeader("x-upsert", "true");
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        
+        xhr.send(file);
+      });
       
       const { data: publicUrlData } = supabase.storage.from('Videos').getPublicUrl(fileName);
       
@@ -151,11 +178,64 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
       
     } catch (error: any) {
       console.error(error);
+      if (error.message !== 'Upload cancelled by user.') {
+         toast.error(error.message || 'Failed to transcribe media.');
+      }
+    } finally {
+      setIsUploading(false);
+      setTranscriptionStatus(null);
+      setUploadRequest(null);
+      setUploadProgress(0);
+      if (event.target) event.target.value = '';
+    }
+  };
+
+  const cancelUpload = () => {
+    if (uploadRequest) {
+      uploadRequest.abort();
+      setUploadRequest(null);
+      setIsUploading(false);
+      setTranscriptionStatus(null);
+      setUploadProgress(0);
+      toast.info('Upload cancelled.');
+    }
+  };
+
+  const retryTranscription = async () => {
+    if (!editingLesson?.id || !editingLesson.muxPlaybackId) return;
+    
+    setIsUploading(true);
+    setTranscriptionStatus("Fetching remote video for transcription...");
+    setUploadProgress(0);
+
+    try {
+      const url = `/api/admin/transcribe?lessonId=${editingLesson.id}&videoUrl=${encodeURIComponent(editingLesson.muxPlaybackId)}`;
+      
+      const response = await fetch(url, { method: 'POST' });
+
+      if (!response.ok) {
+        let errMessage = 'Transcription failed';
+        try {
+           const errData = await response.json();
+           errMessage = errData.error || errData.details?.lessonId?.[0] || 'Unknown error occurred.';
+        } catch(e) {}
+        throw new Error(errMessage);
+      }
+
+      const data = await response.json();
+      
+      setEditingLesson((prev: any) => ({
+         ...prev,
+         description: data.cleanedText || "Transcription complete. No text returned."
+      }));
+
+      toast.success('Transcription recovered successfully!');
+    } catch (error: any) {
+      console.error(error);
       toast.error(error.message || 'Failed to transcribe media.');
     } finally {
       setIsUploading(false);
       setTranscriptionStatus(null);
-      if (event.target) event.target.value = '';
     }
   };
 
@@ -631,8 +711,15 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                          className="absolute inset-x-0 bottom-0 h-[46px] opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
                        />
                        <button 
-                         disabled={isUploading}
-                          className={`w-full h-[46px] border border-dashed rounded-xl flex items-center justify-center gap-2 transition-all ${
+                         type="button"
+                         disabled={isUploading && !uploadRequest}
+                         onClick={(e) => {
+                           if (isUploading && uploadRequest) {
+                             e.preventDefault();
+                             cancelUpload();
+                           }
+                         }}
+                          className={`w-full relative h-[46px] border border-dashed rounded-xl flex items-center justify-center gap-2 transition-all overflow-hidden cursor-pointer ${
                            isUploading 
                              ? 'bg-admin-surface border-admin-border text-admin-muted' 
                              : 'border-admin-border bg-ink hover:bg-admin-surface-hover hover:border-admin-border-hover text-admin-muted hover:text-surface'
@@ -640,13 +727,23 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                        >
                           {isUploading ? (
                             <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">{transcriptionStatus}</span>
+                              <div className="absolute inset-y-0 left-0 bg-accent/20 transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                              <div className="relative z-10 flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin text-accent" />
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">
+                                  {transcriptionStatus} {uploadProgress > 0 && uploadProgress < 100 && `(${uploadProgress}%)`}
+                                </span>
+                              </div>
+                              {uploadRequest && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 text-red-500 hover:text-red-400 p-1 bg-red-500/10 hover:bg-red-500/20 rounded z-30 pointer-events-auto">
+                                  <X className="w-4 h-4" />
+                                </div>
+                              )}
                             </>
                           ) : (
                             <>
                               <UploadCloud className="w-4 h-4" />
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">Select Video File</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] pointer-events-none">Select Video File</span>
                             </>
                           )}
                        </button>
