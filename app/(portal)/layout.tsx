@@ -119,26 +119,27 @@ export default function PortalLayout({
       <div className="flex-1 flex flex-col min-w-0 bg-[#111111]">
         
         {/* Top Utility Bar */}
-        <header className="h-16 border-b border-[#2D2D2D] flex items-center justify-between px-8 shrink-0 bg-[#111111]/80 backdrop-blur-md z-50 sticky top-0">
+        <header className="h-16 border-b border-[#2D2D2D] flex items-center justify-between px-4 md:px-8 shrink-0 bg-[#111111]/80 backdrop-blur-md z-50 sticky top-0">
           <div className="flex items-center gap-3">
             <span className="px-2 py-1 rounded bg-[#1C1C1E] border border-[#2D2D2D] text-[10px] font-semibold tracking-[0.2em] uppercase text-[#FFFFFF]">FS·C3</span>
-            <span className="text-sm font-medium text-[#FFFFFF]">AI-Native Product Builder Cohort</span>
+            <span className="text-sm font-medium text-[#FFFFFF] hidden sm:block truncate">AI-Native Product Builder Cohort</span>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
              {/* Search trigger */}
              <div 
                onClick={triggerSearch}
-               className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-[#2D2D2D] bg-white/5 text-xs font-medium cursor-pointer hover:bg-white/10 hover:border-[#2D2D2D] transition-all duration-300 text-[#FFFFFF]"
+               className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-1.5 rounded-xl border border-[#2D2D2D] bg-white/5 text-xs font-medium cursor-pointer hover:bg-white/10 hover:border-[#2D2D2D] transition-all duration-300 text-[#FFFFFF]"
              >
-                <Search className="w-3.5 h-3.5" />
-                <span>Search...</span>
-                <kbd className="font-sans text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-[#FFFFFF] tracking-widest ml-4">⌘K</kbd>
+                <Search className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                <span className="hidden sm:inline">Search...</span>
+                <kbd className="hidden sm:inline font-sans text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-[#FFFFFF] tracking-widest md:ml-4">⌘K</kbd>
              </div>
              
              {/* Notification */}
              <div className="relative">
                <button 
+
                  onClick={() => setShowNotifications(!showNotifications)}
                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors relative ${showNotifications ? 'bg-white/10 text-[#FFFFFF]' : 'hover:bg-[#1C1C1E] text-[#AAAAAA] hover:text-[#FFFFFF]'}`}
                >
@@ -243,7 +244,7 @@ export default function PortalLayout({
         </header>
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto w-full relative">
+        <main className="flex-1 overflow-y-auto w-full relative pb-20 md:pb-0">
           {children}
         </main>
         
