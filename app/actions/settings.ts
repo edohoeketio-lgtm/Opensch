@@ -28,6 +28,7 @@ export async function updateProfile(data: {
 
   revalidatePath('/settings');
   revalidatePath('/admin/settings');
+  revalidatePath('/', 'layout');
   return { success: true, profile };
 }
 

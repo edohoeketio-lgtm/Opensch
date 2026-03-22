@@ -45,7 +45,7 @@ export const getAuthenticatedUser = cache(async () => {
         role: isSuperAdmin ? "ADMIN" : "STUDENT",
         profile: {
           create: {
-            fullName: userEmail.split('@')[0], 
+            fullName: authUser.user_metadata?.fullName || userEmail.split('@')[0], 
             avatarUrl: `https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent`
           }
         }

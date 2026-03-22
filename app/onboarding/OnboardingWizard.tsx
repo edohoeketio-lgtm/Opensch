@@ -5,7 +5,7 @@ import { syncOnboardingProfile } from '@/app/actions/onboarding'
 import { toast } from 'sonner'
 
 export default function OnboardingWizard({ role }: { role: string }) {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
@@ -47,16 +47,48 @@ export default function OnboardingWizard({ role }: { role: string }) {
       <div className="w-full max-w-xl p-8 relative z-10">
         
         {/* Progress Logic */}
-        <div className="flex items-center space-x-2 mb-12">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="flex-1 h-1.5 rounded-full bg-neutral-900 overflow-hidden">
-              <div 
-                className={`h-full bg-white transition-all duration-500 ease-out`}
-                style={{ width: step >= i ? '100%' : '0%' }}
-              />
+        {step > 0 && (
+          <div className="flex items-center space-x-2 mb-12">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex-1 h-1.5 rounded-full bg-neutral-900 overflow-hidden">
+                <div 
+                  className={`h-full bg-white transition-all duration-500 ease-out`}
+                  style={{ width: step >= i ? '100%' : '0%' }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Step 0: Welcome Screen */}
+        {step === 0 && (
+          <div className="animate-in fade-in zoom-in-95 duration-700 flex flex-col items-center text-center space-y-8 py-10">
+            <div className="w-24 h-24 bg-white/[0.03] border border-white/10 flex items-center justify-center rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl mb-4">
+               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
+                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+               </svg>
             </div>
-          ))}
-        </div>
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-neutral-500 pb-2">
+                Welcome to OpenSch.
+              </h1>
+              <p className="text-lg text-neutral-400 max-w-md mx-auto leading-relaxed">
+                You have officially arrived. Prepare to master engineering, build your network, and redefine what's possible.
+              </p>
+            </div>
+
+            <button 
+              onClick={handleNext}
+              className="mt-8 relative group overflow-hidden bg-white text-black font-semibold rounded-full px-8 py-4 text-base transition-all hover:scale-105 shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.25)]"
+            >
+              <div className="relative z-10 flex items-center gap-2">
+                Begin Student Onboarding
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-neutral-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </div>
+        )}
 
         {/* Step 1: Basics */}
         {step === 1 && (

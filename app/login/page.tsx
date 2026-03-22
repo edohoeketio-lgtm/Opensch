@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
+  const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState<string | null>(null)
   const [isSignUp, setIsSignUp] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -25,6 +26,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        data: isSignUp ? { fullName } : undefined,
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${isSignUp ? '/onboarding' : '/dashboard'}`,
       },
     })
@@ -69,6 +71,25 @@ export default function LoginPage() {
         {/* Auth Form Box */}
         <div className="bg-neutral-900/40 border border-neutral-800/60 rounded-2xl p-6 shadow-xl backdrop-blur-md">
           <form onSubmit={handleEmailLogin} className="space-y-4">
+            
+            {/* Conditional Full Name for Sign Up */}
+            {isSignUp && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <label htmlFor="fullName" className="text-xs font-medium text-neutral-400 block ml-1 uppercase tracking-wider">
+                  Full Name
+                </label>
+                <input 
+                  id="fullName" 
+                  type="text" 
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Satoshi Nakamoto" 
+                  required={isSignUp}
+                  className="w-full bg-neutral-950/50 border border-neutral-800 text-white rounded-lg px-4 py-3 placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-neutral-500 focus:border-neutral-500 transition-all text-sm"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-xs font-medium text-neutral-400 block ml-1 uppercase tracking-wider">
                 Email Address

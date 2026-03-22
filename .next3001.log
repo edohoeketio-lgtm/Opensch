@@ -76,3 +76,70 @@ Invalid input value: invalid input syntax for type uuid: "mock-instructor-id"
   digest: '475505682'
 }
  GET /curriculum 200 in 382ms
+ ✓ Compiled in 84ms
+ ✓ Compiled /curriculum in 37ms
+ ⨯ Error: Unauthorized access. You must be logged in to access the curriculum.
+    at getOrCreateCourse (app/actions/curriculum.ts:10:11)
+    at async CurriculumPage (app/(portal)/curriculum/page.tsx:9:18)
+   8 |   const user = await getAuthenticatedUser();
+   9 |   if (!user) {
+> 10 |     throw new Error("Unauthorized access. You must be logged in to access the curriculum.");
+     |           ^
+  11 |   }
+  12 |
+  13 |   const includeQuery = { {
+  digest: '475505682'
+}
+ GET /curriculum 200 in 360ms
+ ✓ Compiled in 210ms
+ ✓ Compiled in 220ms
+ ✓ Compiled /curriculum in 88ms
+ ⨯ Error: Unauthorized access. You must be logged in to access the curriculum.
+    at getOrCreateCourse (app/actions/curriculum.ts:10:11)
+    at async CurriculumPage (app/(portal)/curriculum/page.tsx:9:18)
+   8 |   const user = await getAuthenticatedUser();
+   9 |   if (!user) {
+> 10 |     throw new Error("Unauthorized access. You must be logged in to access the curriculum.");
+     |           ^
+  11 |   }
+  12 |
+  13 |   const includeQuery = { {
+  digest: '672686160'
+}
+ ⨯ Error: Unauthorized access. You must be logged in to access the curriculum.
+    at getOrCreateCourse (app/actions/curriculum.ts:10:11)
+    at async CurriculumPage (app/(portal)/curriculum/page.tsx:9:18)
+   8 |   const user = await getAuthenticatedUser();
+   9 |   if (!user) {
+> 10 |     throw new Error("Unauthorized access. You must be logged in to access the curriculum.");
+     |           ^
+  11 |   }
+  12 |
+  13 |   const includeQuery = { {
+  digest: '1117365786'
+}
+ GET /curriculum 200 in 816ms
+ GET /curriculum 200 in 795ms
+ POST /curriculum 200 in 93ms
+ POST /curriculum 200 in 105ms
+ POST /curriculum 200 in 97ms
+ ⨯ Error: Unauthorized
+    at getNotifications (app/actions/notifications.ts:9:20)
+   7 | export async function getNotifications(limit: number = 10) {
+   8 |   const user = await getAuthenticatedUser();
+>  9 |   if (!user) throw new Error("Unauthorized");
+     |                    ^
+  10 |
+  11 |   const notifications = await prisma.notification.findMany({
+  12 |     where: { userId: user.id }, {
+  digest: '3931631941'
+}
+ POST /curriculum 500 in 555ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 71ms
+ ✓ Compiled in 215ms
+ ✓ Compiled /curriculum in 32ms
+ GET /curriculum 200 in 2740ms
+ ✓ Compiled middleware in 3ms
+ ✓ Compiled in 72ms
+ ✓ Compiled in 138ms
