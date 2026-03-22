@@ -14,6 +14,7 @@ export type UserType = {
   name: string;
   initial: string;
   role: string;
+  avatar?: string;
 };
 
 export type FeedItemType = {
@@ -487,9 +488,13 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                    <div className="flex-shrink-0">
                      <div 
                        className="w-10 h-10 rounded-full border border-[#2D2D2D] flex items-center justify-center overflow-hidden"
-                       style={{ backgroundColor: getAvatarColor(item.user.initial) }}
+                       style={{ backgroundColor: item.user.avatar ? 'transparent' : getAvatarColor(item.user.initial) }}
                      >
-                       <span className="text-[#FFFFFF] font-bold text-sm">{item.user.initial}</span>
+                       {item.user.avatar ? (
+                         <Image width={600} height={600} src={item.user.avatar} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+                       ) : (
+                         <span className="text-[#FFFFFF] font-bold text-sm">{item.user.initial}</span>
+                       )}
                      </div>
                    </div>
 

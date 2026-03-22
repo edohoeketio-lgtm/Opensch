@@ -99,7 +99,7 @@ export async function getMyProfile() {
   });
   return { 
     fullName: profile?.fullName || null, 
-    avatarUrl: profile?.avatarUrl || null, 
+    avatarUrl: profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent", 
     role: user.role 
   };
 }

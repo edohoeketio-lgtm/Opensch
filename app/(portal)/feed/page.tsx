@@ -73,6 +73,7 @@ export default async function CampusFeedPage() {
         name: author?.name || (author?.email ? author.email.split('@')[0] : 'Unknown'),
         initial: author?.name?.[0]?.toUpperCase() || author?.email?.[0]?.toUpperCase() || 'U',
         role: author?.role === 'INSTRUCTOR' ? 'Instructor' : 'Student',
+        avatar: author?.profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent",
       },
       time: new Date(t.createdAt).toLocaleDateString(),
       title: t.title,

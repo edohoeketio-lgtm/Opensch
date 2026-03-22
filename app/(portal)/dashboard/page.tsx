@@ -129,7 +129,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         return {
           id: t.id,
           authorName: author?.profile?.fullName || (author?.email ? author.email.split('@')[0] : 'Unknown'),
-          authorAvatar: author?.profile?.avatarUrl,
+          authorAvatar: author?.profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent",
           authorInitial: author?.profile?.fullName?.[0]?.toUpperCase() || author?.email?.[0]?.toUpperCase() || 'U',
           title: t.title,
           timeLabel: formatRelativeTime(new Date(t.createdAt)),

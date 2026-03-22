@@ -46,7 +46,7 @@ export const getAuthenticatedUser = cache(async () => {
         profile: {
           create: {
             fullName: userEmail.split('@')[0], 
-            avatarUrl: `https://api.dicebear.com/7.x/notionists/svg?seed=${userEmail}&backgroundColor=transparent`
+            avatarUrl: `https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent`
           }
         }
       },
