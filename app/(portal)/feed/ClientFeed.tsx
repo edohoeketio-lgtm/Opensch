@@ -318,7 +318,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                       onClick={() => setPostImage(null)} 
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white hover:bg-black transition-colors border border-white/20"
                     >
-                      <span className="text-[10px] font-bold">✕</span>
+                      <span className="text-[10px] font-bold">x</span>
                     </button>
                   </div>
                 </div>
@@ -331,7 +331,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                       onClick={() => setPostVideo(null)} 
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white hover:bg-black transition-colors border border-white/20 z-10"
                     >
-                      <span className="text-[10px] font-bold">✕</span>
+                      <span className="text-[10px] font-bold">x</span>
                     </button>
                   </div>
                 </div>

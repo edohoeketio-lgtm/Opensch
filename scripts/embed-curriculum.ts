@@ -83,7 +83,7 @@ If a student asks a question about ${lesson.title}, they are currently learning 
     }
   }
   
-  console.log(`✅ Semantic Ingestion complete! The OpenSch AI now understands ${totalProcessed} curriculum chunks.`);
+  console.log(` Semantic Ingestion complete! The OpenSch AI now understands ${totalProcessed} curriculum chunks.`);
 }
 
 main().catch(err => {
