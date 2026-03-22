@@ -30,7 +30,7 @@ export const CURRICULUM_WEEKS: Week[] = [
             {
                 title: "The Builder Environment",
                 lessons: [
-                    { title: "Learn the basics of Google Antigravity720p" }
+                    { title: "Learn the basics of Google Antigravity" }
                 ],
             },
             {

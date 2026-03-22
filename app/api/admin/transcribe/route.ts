@@ -73,6 +73,7 @@ export async function POST(req: Request) {
     const url = new URL(req.url);
     const lessonIdRaw = url.searchParams.get('lessonId');
     const fileName = url.searchParams.get('fileName') || 'upload.mp4';
+    const videoUrl = url.searchParams.get('videoUrl');
 
     const validatedFields = TranscribeSchema.safeParse({
       lessonId: lessonIdRaw,
@@ -93,23 +94,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Lesson not found.' }, { status: 404 });
     }
 
-    if (!req.body) {
-      return NextResponse.json({ error: 'No video stream provided.' }, { status: 400 });
+    if (!req.body && !videoUrl) {
+      return NextResponse.json({ error: 'No video stream or remote video URL provided.' }, { status: 400 });
     }
 
-    console.log(`Starting transcription for Lesson ${lessonId}, file: ${fileName}`);
+    console.log(`Starting transcription for Lesson ${lessonId}, file: ${fileName}, remote: ${!!videoUrl}`);
 
     // --- AUDIO COMPRESSION PASS ---
     // OpenAI Whisper has a strict 25MB limit. We extract the audio locally to a tiny MP3 first.
     const tempVideoPath = path.join(os.tmpdir(), `upload-${Date.now()}.mp4`);
     const tempAudioPath = path.join(os.tmpdir(), `audio-${Date.now()}.mp3`);
     
-    // Convert Web Fetch ReadableStream to Node WritableStream directly without memory buffering
-    const fileStream = fs.createWriteStream(tempVideoPath);
-    const readable = Readable.fromWeb(req.body as import('stream/web').ReadableStream);
-    
-    readable.pipe(fileStream);
-    await finished(fileStream);
+    if (videoUrl) {
+       console.log(`Downloading remote video from: ${videoUrl}`);
+       const remoteRes = await fetch(videoUrl);
+       if (!remoteRes.ok || !remoteRes.body) {
+         return NextResponse.json({ error: 'Failed to access remote video URL.' }, { status: 400 });
+       }
+       const fileStream = fs.createWriteStream(tempVideoPath);
+       const readable = Readable.fromWeb(remoteRes.body as import('stream/web').ReadableStream);
+       readable.pipe(fileStream);
+       await finished(fileStream);
+    } else {
+       // Convert Web Fetch ReadableStream to Node WritableStream directly without memory buffering
+       const fileStream = fs.createWriteStream(tempVideoPath);
+       const readable = Readable.fromWeb(req.body as import('stream/web').ReadableStream);
+       readable.pipe(fileStream);
+       await finished(fileStream);
+    }
 
     console.log('Extracting and compressing audio via ffmpeg...');
     // Extract 32kbps mono audio
