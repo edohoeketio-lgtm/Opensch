@@ -3,6 +3,7 @@
 import { Save, AppWindow, Mail, Loader2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { updateNotificationPreferences } from '@/app/actions/settings';
+import { toast } from 'sonner';
 
 export function NotificationSettingsForm({ profile }: { profile: any }) {
   const [isPending, startTransition] = useTransition();
@@ -21,8 +22,9 @@ export function NotificationSettingsForm({ profile }: { profile: any }) {
 
       try {
         await updateNotificationPreferences(preferences);
+        toast.success("Notification preferences updated!");
       } catch (e: any) {
-        alert(e.message);
+        toast.error(e.message);
       }
     });
   }

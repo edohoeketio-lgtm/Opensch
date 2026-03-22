@@ -3,6 +3,7 @@
 import { Save, Lock, Mail, Users, HardHat, Loader2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { updateGlobalSettings } from '@/app/actions/settings';
+import { toast } from 'sonner';
 
 export function GlobalSettingsForm({ settings }: { settings: any }) {
   const [isPending, startTransition] = useTransition();
@@ -22,8 +23,9 @@ export function GlobalSettingsForm({ settings }: { settings: any }) {
 
       try {
         await updateGlobalSettings(data);
+        toast.success("Global settings saved successfully!");
       } catch (e: any) {
-        alert(e.message);
+        toast.error(e.message);
       }
     });
   }

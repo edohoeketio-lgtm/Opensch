@@ -6,6 +6,7 @@ import { updateProfile } from '@/app/actions/settings';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { AvatarCropModal } from './AvatarCropModal';
+import { toast } from 'sonner';
 
 export function ProfileSettingsForm({ profile }: { profile: any }) {
   const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
@@ -48,7 +49,7 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
         const { error } = await supabase.storage.from('avatars').upload(fileName, avatarFile, { upsert: true });
         
         if (error) {
-          alert("Failed to upload image: " + error.message);
+          toast.error("Failed to upload image: " + error.message);
           return;
         }
 
@@ -77,9 +78,10 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
       try {
         await updateProfile(data);
         window.dispatchEvent(new Event('profileUpdated'));
+        toast.success("Profile updated successfully!");
         router.refresh();
       } catch (e: any) {
-        alert(e.message);
+        toast.error(e.message);
       }
     });
   }

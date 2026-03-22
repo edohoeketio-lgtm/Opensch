@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import { X, Check } from 'lucide-react';
 import { getCroppedImg } from '@/lib/utils/cropImage';
+import { toast } from 'sonner';
 
 interface AvatarCropModalProps {
   imageSrc: string;
@@ -33,7 +34,7 @@ export function AvatarCropModal({ imageSrc, onClose, onCropComplete }: AvatarCro
       }
     } catch (e) {
       console.error(e);
-      alert("Failed to crop image.");
+      toast.error("Failed to crop image.");
     } finally {
       setIsProcessing(false);
     }

@@ -21,7 +21,15 @@ export const getAuthenticatedUser = cache(async () => {
     }
   });
 
-  const { data: { user: authUser } } = await supabase.auth.getUser();
+  let authUser = null;
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    authUser = user;
+  } catch (error) {
+    console.warn("Supabase auth edge timeout/fetch failure intercepted:", error);
+    return null;
+  }
   
   if (!authUser || !authUser.email) {
     return null;
