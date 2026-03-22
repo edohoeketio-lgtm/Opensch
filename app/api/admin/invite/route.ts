@@ -43,27 +43,30 @@ export async function POST(req: Request) {
       });
     }
 
-    // Dispatch real magic link strictly through standard Supabase Auth
-    // This allows us to safely bypass requiring the Service Role Key while achieving the exact same result!
+    // Dispatch real magic link strictly through standard Supabase Auth Admin API
+    // This securely bypasses PKCE browser session verification because it is meant
+    // for server-to-server invitation dispatch scenarios.
     const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAnon = createClient(
+    
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
     
-    const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
-      email: email,
-      options: {
-        emailRedirectTo: `${siteUrl}/auth/callback?next=/onboarding`,
-        shouldCreateUser: true
-      }
+    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${siteUrl}/auth/callback?next=/onboarding`
     });
 
-    if (otpError) {
-      console.error('Supabase OTP Dispatch error:', otpError);
-      return NextResponse.json({ error: 'Failed to securely dispatch invite via Supabase' }, { status: 500 });
+    if (inviteError) {
+      console.error('Supabase Admin Invite error:', inviteError);
+      return NextResponse.json({ error: 'Failed to securely dispatch invite via Supabase API' }, { status: 500 });
     }
 
     return NextResponse.json({ 
