@@ -22,6 +22,8 @@ export async function POST(req: Request) {
 
     let message = 'Instructor invited and emailed successfully.';
 
+    let isNewCreation = false;
+
     if (newInstructor) {
       if (newInstructor.role === 'INSTRUCTOR') {
         // Instead of erroring out if they already exist, we treat this as a "Resend Invite" action.
@@ -34,6 +36,7 @@ export async function POST(req: Request) {
         });
       }
     } else {
+      isNewCreation = true;
       // Create new instructor
       newInstructor = await prisma.user.create({
         data: {
@@ -49,6 +52,9 @@ export async function POST(req: Request) {
     const { createClient } = await import('@supabase/supabase-js');
     
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      if (isNewCreation) {
+        await prisma.user.delete({ where: { email } });
+      }
       console.error('CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing from environment variables.');
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
@@ -65,6 +71,9 @@ export async function POST(req: Request) {
     });
 
     if (inviteError) {
+      if (isNewCreation) {
+        await prisma.user.delete({ where: { email } });
+      }
       console.error('Supabase Admin Invite error:', inviteError);
       return NextResponse.json({ error: 'Failed to securely dispatch invite via Supabase API' }, { status: 500 });
     }
