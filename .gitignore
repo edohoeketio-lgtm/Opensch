@@ -31,6 +31,8 @@ next-env.d.ts
 /lib/generated/prisma
 .gstack/
 public/Lesson Video/*.mp4
-\n.env*\ntest-*\nsupabase/.temp
+.env*
+test-*
+supabase/.temp
 .env.backup
 .env.production

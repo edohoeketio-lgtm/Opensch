@@ -4,25 +4,39 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Play, Maximize2, X, FileText, Bot, MessageSquare, Loader2, User, ChevronLeft, Video, Settings } from 'lucide-react';
 import { DeliverableSubmissionFeature } from './DeliverableSubmissionFeature';
+import { StudentQuizGateway } from './StudentQuizGateway';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface InteractiveVideoPlayerProps {
   sprintTitle: string;
   lessonId: string;
+  lessonOrder?: number;
+  videoUrl?: string | null;
   isLastLesson?: boolean;
   isReadOnly?: boolean;
+  quizData?: any[];
+  transcriptSegments?: any[];
+  transcriptCleanText?: string;
+  description?: string | null;
+  nextLessonUrl?: string | null;
+  isCompleted?: boolean;
 }
 
-export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = false, isReadOnly = false }: InteractiveVideoPlayerProps) {
+export function InteractiveVideoPlayer({ sprintTitle, lessonId, lessonOrder, videoUrl, isLastLesson = false, isReadOnly = false, quizData = [], transcriptSegments = [], transcriptCleanText = '', description, nextLessonUrl, isCompleted = false }: InteractiveVideoPlayerProps) {
+  const router = useRouter();
   const [isIntelligenceOpen, setIsIntelligenceOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'transcript' | 'copilot'>('transcript');
   const [mounted, setMounted] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(isCompleted);
+  const [hasVideoEnded, setHasVideoEnded] = useState(false);
 
   // Video State
   const videoRef = useRef<HTMLVideoElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [quality, setQuality] = useState<'1080p'|'720p'|'360p'|'Auto'>('Auto');
 
   // Copilot Chat State
   const [messages, setMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
@@ -30,28 +44,29 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
   const [isCopilotTyping, setIsCopilotTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Temporary Mock Data as fallback
-  const MOCK_TRANSCRIPT = [
-    { id: 1, start: 0, end: 75, text: "Welcome to Sprint 3. Today we are going to dive deep into implementing OAuth providers seamlessly into your Next.js application." },
-    { id: 2, start: 75, end: 220, text: "The biggest mistake I see developers make is trying to handle the entire session manually. We are going to strictly rely on Auth.js to handle the cookie parsing for us." },
-    { id: 3, start: 220, end: 382, text: "Let's open up our `route.ts` file inside the `api/auth` directory. This is where the magic happens. We essentially pass the incoming request directly to the generic auth handler." },
-    { id: 4, start: 382, end: 500, text: "Now, go to the Google Cloud Console. I know the UI is terrible, but stay with me. You need to create a new project, navigate to APIs & Services, and configure the OAuth consent screen." }
-  ];
+  const [segments, setSegments] = useState<any[]>(transcriptSegments || []);
+  const [transcriptText, setTranscriptText] = useState<string>(transcriptCleanText || '');
 
-  const [transcriptSegments, setTranscriptSegments] = useState<any[]>(MOCK_TRANSCRIPT);
-  const [transcriptText, setTranscriptText] = useState<string>(MOCK_TRANSCRIPT.map(s => s.text).join(" "));
+  // Auto-pause video when quiz opens
+  useEffect(() => {
+    if (showQuiz && videoRef.current) {
+      videoRef.current.pause();
+    }
+  }, [showQuiz]);
 
   useEffect(() => {
     setMounted(true);
-    fetch('/latest-transcript.json')
-      .then(res => res.json())
-      .then(data => {
-         if (data && data.segments) {
-            setTranscriptSegments(data.segments);
-            setTranscriptText(data.cleanedText || data.rawText);
-         }
-      })
-      .catch(err => console.log('No local transcript found, using fallback.'));
+    if (!transcriptSegments || transcriptSegments.length === 0) {
+      fetch('/latest-transcript.json')
+        .then(res => res.json())
+        .then(data => {
+           if (data && data.segments) {
+              setSegments(data.segments);
+              setTranscriptText(data.cleanedText || data.rawText || '');
+           }
+        })
+        .catch(err => console.log('No local transcript found.'));
+    }
   }, []);
 
   // Sync scroll for chat
@@ -103,6 +118,7 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
   };
 
   const jumpToTime = (time: number) => {
+    setShowQuiz(false); // Close quiz when hopping back to video
     if (videoRef.current) {
       videoRef.current.currentTime = time;
       videoRef.current.play();
@@ -113,6 +129,34 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
     const min = Math.floor(seconds / 60);
     const sec = Math.floor(seconds % 60);
     return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const handleQualityChange = (q: '1080p' | '720p' | '360p' | 'Auto') => {
+    if (q === quality) return;
+    setQuality(q);
+    
+    if (videoRef.current) {
+      const time = videoRef.current.currentTime;
+      const isPaused = videoRef.current.paused;
+      
+      // In production, we'd swap the src URL based on the selected quality before loading
+      // const videoSrcMap = { '1080p': '...1080p.mp4', '720p': '...720p.mp4', '360p': '...360p.mp4', 'Auto': '...1080p.mp4' };
+      // videoRef.current.src = videoSrcMap[q];
+      
+      const onLoaded = () => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = time;
+          videoRef.current.playbackRate = playbackRate;
+          if (!isPaused) {
+            videoRef.current.play().catch(e => console.error("Playback interrupted", e));
+          }
+          videoRef.current.removeEventListener('loadedmetadata', onLoaded);
+        }
+      };
+      
+      videoRef.current.addEventListener('loadedmetadata', onLoaded);
+      videoRef.current.load(); // Forces reload of the video element to mock the swap
+    }
   };
 
   const handleChatSubmit = async (e: React.FormEvent) => {
@@ -165,6 +209,9 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
     }
   };
 
+  const fallbackDescription = "Pay close attention to this session. After mastering these principles, you'll be able to execute the concepts directly inside your own local workspace.";
+  const displayDescription = description || fallbackDescription;
+
   return (
     <div className="flex absolute inset-0 bg-[#111111] text-[#FFFFFF] font-sans overflow-hidden w-full">
       
@@ -199,7 +246,9 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
                   className="p-6 whitespace-nowrap"
                 >
                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B08D57]">Sprint {lessonId}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B08D57]">
+                        {typeof lessonOrder === 'number' ? `Session ${lessonOrder + 1}` : 'Active Session'}
+                      </span>
                       <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-[#2D2D2D] text-[9px] font-semibold uppercase tracking-[0.15em] text-[#9CA3AF] flex items-center gap-1.5 shrink-0"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></span> Active</span>
                    </div>
                    
@@ -207,9 +256,25 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
                       {sprintTitle}
                    </h1>
                    
-                   <p className="text-[13px] leading-relaxed text-[#9CA3AF] mb-8 whitespace-normal">
-                      Watch this session to master pulling in authentication flows. Execute these principles directly inside your own local workspace (Cursor/VS Code) after mastering the concepts.
-                   </p>
+                   {/* Description with Truncation & Continue Reading link */}
+                   <div className="mb-8 whitespace-normal">
+                      <p className="text-[13px] leading-relaxed text-[#9CA3AF] inline">
+                        {displayDescription.length > 200 
+                           ? displayDescription.substring(0, 200).trim() + "... " 
+                           : displayDescription + " "}
+                      </p>
+                      {displayDescription.length > 200 && (
+                        <button 
+                          onClick={() => {
+                             setActiveTab('transcript');
+                             setIsIntelligenceOpen(true);
+                          }}
+                          className="pt-1 text-[#FFFFFF] text-[12px] font-semibold tracking-wide hover:text-[#B08D57] transition-colors inline-block cursor-pointer"
+                        >
+                          Continue reading →
+                        </button>
+                      )}
+                   </div>
 
                    {/* Sprint Deliverables & Notes */}
                    <div className="space-y-3">
@@ -292,11 +357,44 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
               </div>
             </motion.div>
           )}
+
+          {quizData && quizData.length > 0 && !showQuiz && hasVideoEnded && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
+            >
+               <button 
+                  onClick={() => setShowQuiz(true)}
+                  className="px-6 py-3 bg-white text-black text-[13px] font-bold tracking-widest uppercase rounded-full shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:scale-105 transition-all"
+               >
+                  VERIFY KNOWLEDGE TO CONTINUE
+               </button>
+            </motion.div>
+          )}
+
         </AnimatePresence>
 
         {/* Cinematic Video Player Space */}
         <div className="flex-1 flex items-center justify-center relative overflow-hidden group p-8">
           
+          <StudentQuizGateway 
+              isOpen={showQuiz}
+              lessonId={lessonId}
+              quizData={quizData}
+              isCompleted={isCompleted}
+              onSeek={jumpToTime}
+              onPassed={() => {
+                 setShowQuiz(false);
+                 if (nextLessonUrl && !isReadOnly) {
+                    router.push(nextLessonUrl);
+                 }
+              }}
+              onClose={() => setShowQuiz(false)}
+              isReadOnly={isReadOnly}
+           />
+
           {/* Custom Speed Controls (Floating Top Right) */}
           <motion.div 
             layout
@@ -308,17 +406,33 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
               ref={videoRef}
               onTimeUpdate={handleTimeUpdate}
               onPause={handlePause}
+              onEnded={() => {
+                setHasVideoEnded(true);
+                if (quizData && quizData.length > 0) {
+                  setShowQuiz(true);
+                }
+              }}
               controls 
               controlsList="nodownload"
               className="w-full h-full outline-none bg-black"
               preload="metadata"
             >
-              <source src="/Lesson Video/An Illustrated Guide to OAuth and OpenID Connect.mp4" type="video/mp4" />
+              <source src={videoUrl || `/Lesson Video/${sprintTitle}.mp4`} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 
-            {/* Floating Speed Control Panel */}
+            {/* Floating Control Panels */}
             <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+              
+              {/* Quality Control Panel (Inactive) */}
+              <div className="group/quality relative flex items-center justify-end cursor-not-allowed" title="Manual quality selection coming soon">
+                <div className="w-10 h-10 rounded-xl bg-[#111111]/90 backdrop-blur-xl border border-[#2D2D2D]/60 flex items-center justify-center shadow-lg text-[#FFFFFF] opacity-0 group-hover/video:opacity-50 transition-opacity duration-300 z-10">
+                   <span className="text-[10px] font-bold text-[#9CA3AF]">Auto</span>
+                   <span className="absolute -bottom-1 -right-1 bg-[#2D2D2D] text-[#888888] text-[8px] font-bold px-1 rounded-sm shadow-sm leading-tight">HD</span>
+                </div>
+              </div>
+
+              {/* Speed Control Panel */}
               <div className="group/speed relative flex items-center justify-end">
                 {/* Invisible hover bridge container */}
                 <div className="absolute right-full pr-2 top-1/2 -translate-y-1/2 flex items-center opacity-0 -translate-x-2 group-hover/speed:opacity-100 group-hover/speed:translate-x-0 transition-all duration-300 pointer-events-none group-hover/speed:pointer-events-auto z-20">
@@ -393,7 +507,7 @@ export function InteractiveVideoPlayer({ sprintTitle, lessonId, isLastLesson = f
                 <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
                   {activeTab === 'transcript' ? (
                     <div className="space-y-6">
-                      {transcriptSegments.map((segment: any, index: number) => {
+                      {segments.map((segment: any, index: number) => {
                         const isActive = currentTime >= segment.start && currentTime < segment.end;
                         
                         return (

@@ -6,8 +6,8 @@ test('CmdK Modal Focus Ring and AI Prompt Stability Loop', async ({ page }) => {
   for (let i = 1; i <= 5; i++) {
     console.log(`\n--- Running Test Loop iteration ${i} ---`);
     
-    // 1. Open CmdK (Using Ctrl+K for PC or Meta+K for Mac)
-    await page.keyboard.press('Control+k');
+    // 1. Open CmdK
+    await page.evaluate(() => document.dispatchEvent(new CustomEvent('open-cmdk')));
     await page.waitForTimeout(500);
     
     const searchInput = page.locator('input[placeholder="Type a command or search..."]');

@@ -13,8 +13,10 @@ export function Navbar() {
     const pathname = usePathname();
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
@@ -30,6 +32,14 @@ export function Navbar() {
             document.body.style.overflow = "";
         };
     }, [mobileOpen]);
+
+    const isActive = (href: string) => {
+        if (!mounted) return false;
+        // Also handle the case where nextJS proxy adds a prefix to the path in development
+        if (pathname === href) return true;
+        if (pathname && href !== "/" && pathname.startsWith(href)) return true;
+        return false;
+    };
 
     return (
         <>
@@ -58,13 +68,13 @@ export function Navbar() {
                                 href={link.href}
                                 className={cn(
                                     "relative text-[0.875rem] font-medium transition-colors duration-300 py-1",
-                                    pathname === link.href
+                                    isActive(link.href)
                                         ? "text-ink"
                                         : "text-muted hover:text-ink"
                                 )}
                             >
                                 {link.label}
-                                {pathname === link.href && (
+                                {isActive(link.href) && (
                                     <motion.div
                                         layoutId="nav-indicator"
                                         className="absolute -bottom-1 left-0 right-0 h-[2px] bg-accent rounded-full"

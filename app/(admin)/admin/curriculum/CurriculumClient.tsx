@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Plus, GripVertical, ChevronDown, ChevronRight, Video, FileText, Settings, BookOpen, X, UploadCloud, AlignLeft, Loader2, Search, Filter, CheckCircle } from 'lucide-react';
-import { createModule, createLesson, updateLessonDetails } from '@/app/actions/curriculum';
+import { Plus, GripVertical, ChevronDown, ChevronRight, Video, FileText, Settings, BookOpen, X, UploadCloud, AlignLeft, Loader2, Search, Filter, CheckCircle, Trash2 } from 'lucide-react';
+import { createModule, createSection, createLesson, updateLessonDetails, deleteLesson, deleteSection, deleteModule } from '@/app/actions/curriculum';
+import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
+import QuizBuilder from './QuizBuilder';
 
 export interface UI_Lesson {
   id: string;
@@ -12,13 +15,22 @@ export interface UI_Lesson {
   duration: string;
   status: string;
   muxPlaybackId: string;
+  quizData?: any;
+}
+
+export interface UI_Section {
+  id: string;
+  title: string;
+  lessons: UI_Lesson[];
+  isHidden?: boolean;
 }
 
 export interface UI_Module {
   id: string;
   title: string;
   description: string;
-  lessons: UI_Lesson[];
+  sections: UI_Section[];
+  isHidden?: boolean;
 }
 
 export default function CurriculumClient({ initialModules, courseId }: { initialModules: UI_Module[], courseId: string }) {
@@ -28,6 +40,9 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
   const [isUploading, setIsUploading] = useState(false);
   const [transcriptionStatus, setTranscriptionStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeletingLesson, setIsDeletingLesson] = useState<string | null>(null);
+  const [isDeletingModule, setIsDeletingModule] = useState<string | null>(null);
+  const [isDeletingSection, setIsDeletingSection] = useState<string | null>(null);
 
   // Sync state with server action revalidation updates
   useEffect(() => {
@@ -43,22 +58,27 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
 
   // Derive filtered modules hierarchy
   const displayModules = modules.map(mod => {
-     // If the module title itself matches, we keep all lessons inside that match other filters
-     // Otherwise we only keep lessons that exactly match title+filters
      const modTitleMatches = mod.title.toLowerCase().includes(searchQuery.toLowerCase());
      
-     const filteredLessons = mod.lessons.filter(l => {
-       const lessonSearchMatches = l.title.toLowerCase().includes(searchQuery.toLowerCase());
-       const lessonTypeMatches = selectedType === 'All Content' || l.type === selectedType.toLowerCase();
-       const lessonStatusMatches = selectedStatus === 'All Statuses' || l.status === selectedStatus.toLowerCase();
-       
-       return (modTitleMatches || lessonSearchMatches) && lessonTypeMatches && lessonStatusMatches;
-     });
+     const filteredSections = mod.sections.map(sec => {
+       const secTitleMatches = sec.title.toLowerCase().includes(searchQuery.toLowerCase());
+       const filteredLessons = sec.lessons.filter(l => {
+         const lessonSearchMatches = l.title.toLowerCase().includes(searchQuery.toLowerCase());
+         const lessonTypeMatches = selectedType === 'All Content' || l.type === selectedType.toLowerCase();
+         const lessonStatusMatches = selectedStatus === 'All Statuses' || l.status === selectedStatus.toLowerCase();
+         return (modTitleMatches || secTitleMatches || lessonSearchMatches) && lessonTypeMatches && lessonStatusMatches;
+       });
+       return {
+         ...sec,
+         lessons: filteredLessons,
+         isHidden: !modTitleMatches && !secTitleMatches && filteredLessons.length === 0 && searchQuery.length > 0
+       };
+     }).filter(sec => !sec.isHidden);
 
      return {
        ...mod,
-       lessons: filteredLessons,
-       isHidden: !modTitleMatches && filteredLessons.length === 0 && searchQuery.length > 0
+       sections: filteredSections,
+       isHidden: !modTitleMatches && filteredSections.length === 0 && searchQuery.length > 0
      };
   }).filter(mod => !mod.isHidden);
 
@@ -75,18 +95,50 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
     setIsUploading(true);
     setTranscriptionStatus("Compressing Audio...");
 
-    const formData = new FormData();
-    formData.append('file', file);
+    if (!editingLesson?.id || editingLesson.id.startsWith('temp-')) {
+      toast.error('Please save your new lesson first before uploading video content.');
+      setIsUploading(false);
+      setTranscriptionStatus(null);
+      return;
+    }
 
     try {
+      setTranscriptionStatus("Uploading to Supabase Storage...");
+      const supabase = createClient();
+      const fileExt = file.name.split('.').pop() || 'mp4';
+      const fileName = `lesson-${editingLesson.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage.from('Videos').upload(fileName, file, { upsert: true });
+      
+      if (uploadError) {
+        throw new Error("Supabase Storage Error: " + uploadError.message + " (Do you have a 'Videos' bucket created?)");
+      }
+      
+      const { data: publicUrlData } = supabase.storage.from('Videos').getPublicUrl(fileName);
+      
+      // Instantly update the UI state with the shiny new Supabase MP4 URL
+      setEditingLesson((prev: any) => ({ ...prev, muxPlaybackId: publicUrlData.publicUrl, type: 'video' }));
+
       setTranscriptionStatus("Transcribing via Whisper API...");
-      const response = await fetch('/api/admin/transcribe', {
+      
+      const encodeName = encodeURIComponent(file.name);
+      const url = `/api/admin/transcribe?lessonId=${editingLesson.id}&fileName=${encodeName}`;
+      
+      const response = await fetch(url, {
         method: 'POST',
-        body: formData,
+        headers: {
+           'Content-Type': file.type || 'application/octet-stream'
+        },
+        body: file,
       });
 
       if (!response.ok) {
-        throw new Error('Transcription failed');
+        let errMessage = 'Transcription failed';
+        try {
+           const errData = await response.json();
+           errMessage = errData.error || errData.details?.lessonId?.[0] || 'Unknown error occurred.';
+        } catch(e) {}
+        throw new Error(errMessage);
       }
 
       setTranscriptionStatus("Cleaning with GPT-4o-mini...");
@@ -97,9 +149,9 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
          description: data.cleanedText || "Transcription complete. No text returned."
       }));
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to transcribe media.");
+      toast.error(error.message || 'Failed to transcribe media.');
     } finally {
       setIsUploading(false);
       setTranscriptionStatus(null);
@@ -119,7 +171,7 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
         id: optimisticId,
         title: newTitle,
         description: "Click settings to configure module details.",
-        lessons: []
+        sections: []
       }
     ]);
     setExpandedModules(prev => [...prev, optimisticId]);
@@ -129,44 +181,63 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
       // Data will refresh via Server Action revalidatePath implicitly, replacing optimistic ID
     } catch (error) {
        console.error(error);
-       alert("Failed to create module.");
+       toast.error('Failed to create module.');
        // Revert optimistic if needed
     }
   };
 
-  const handleCreateLesson = async (moduleId: string) => {
+  const handleCreateSection = async (moduleId: string) => {
     const targetModule = modules.find(m => m.id === moduleId);
     if (!targetModule) return;
+    const newOrder = targetModule.sections.length;
+    const optimisticId = `temp-section-${Date.now()}`;
+    const newTitle = `New Section`;
+    
+    setModules(prev => prev.map(m => m.id === moduleId ? { ...m, sections: [...m.sections, { id: optimisticId, title: newTitle, lessons: [] }] } : m));
+    if (!expandedModules.includes(moduleId)) {
+      setExpandedModules(prev => [...prev, moduleId]);
+    }
 
-    const newOrder = targetModule.lessons.length;
+    try {
+      await createSection(moduleId, newTitle, newOrder);
+    } catch (error) {
+       console.error(error);
+       toast.error('Failed to create section.');
+    }
+  };
+
+  const handleCreateLesson = async (moduleId: string, sectionId: string) => {
+    const targetModule = modules.find(m => m.id === moduleId);
+    const targetSection = targetModule?.sections.find(s => s.id === sectionId);
+    if (!targetSection) return;
+
+    const newOrder = targetSection.lessons.length;
     const optimisticTitle = "New Lesson";
     const optimisticId = `temp-lesson-${Date.now()}`;
     
     // Optimistic UI
-    setModules(prev => prev.map(m => {
-       if (m.id === moduleId) {
-          return {
-             ...m,
-             lessons: [...m.lessons, {
-                id: optimisticId,
-                title: optimisticTitle,
-                description: "Write your lesson content here...",
-                type: "article",
-                duration: "0 mins",
-                status: "draft",
-                muxPlaybackId: ""
-             }]
-          };
-       }
-       return m;
-    }));
+    setModules(prev => prev.map(m => m.id === moduleId ? {
+      ...m,
+      sections: m.sections.map(s => s.id === sectionId ? {
+        ...s,
+        lessons: [...s.lessons, {
+          id: optimisticId,
+          title: optimisticTitle,
+          description: "Write your lesson content here...",
+          type: "article",
+          duration: "0 mins",
+          status: "draft",
+          muxPlaybackId: "",
+          quizData: []
+        }]
+      } : s)
+    } : m));
 
     try {
-      await createLesson(moduleId, optimisticTitle, newOrder, 'article');
+      await createLesson(sectionId, optimisticTitle, newOrder, 'article');
     } catch (error) {
       console.error(error);
-      alert("Failed to create lesson.");
-      // State will self-correct on next revalidation
+      toast.error('Failed to create lesson.');
     }
   };
 
@@ -178,14 +249,66 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
          editingLesson.id,
          editingLesson.title,
          editingLesson.description,
-         editingLesson.muxPlaybackId
+         editingLesson.muxPlaybackId,
+         editingLesson.quizData
        );
        setEditingLesson(null);
     } catch (error) {
        console.error(error);
-       alert("Failed to save content.");
+       toast.error('Failed to save content.');
     } finally {
        setIsSaving(false);
+    }
+  };
+
+  const handleDeleteModule = async (moduleId: string) => {
+    if (!window.confirm("Are you sure you want to delete this module and ALL of its lessons? This cannot be undone.")) return;
+    setIsDeletingModule(moduleId);
+    setModules(prev => prev.filter(m => m.id !== moduleId));
+    try {
+      await deleteModule(moduleId);
+      toast.success('Module deleted successfully.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to delete module.');
+    } finally {
+      setIsDeletingModule(null);
+    }
+  };
+
+  const handleDeleteSection = async (moduleId: string, sectionId: string) => {
+    if (!window.confirm("Are you sure you want to delete this section and ALL of its lessons? This cannot be undone.")) return;
+    setIsDeletingSection(sectionId);
+    setModules(prev => prev.map(m => m.id === moduleId ? { ...m, sections: m.sections.filter(s => s.id !== sectionId) } : m));
+    try {
+      await deleteSection(sectionId);
+      toast.success('Section deleted successfully.');
+    } catch (error) {
+       console.error(error);
+       toast.error('Failed to delete section.');
+    } finally {
+      setIsDeletingSection(null);
+    }
+  };
+
+  const handleDeleteLesson = async (moduleId: string, sectionId: string, lessonId: string) => {
+    if (!window.confirm("Are you sure you want to delete this lesson? This cannot be undone.")) return;
+    setIsDeletingLesson(lessonId);
+    setModules(prev => prev.map(m => m.id === moduleId ? {
+      ...m,
+      sections: m.sections.map(s => s.id === sectionId ? {
+        ...s,
+        lessons: s.lessons.filter(l => l.id !== lessonId)
+      } : s)
+    } : m));
+    try {
+      await deleteLesson(lessonId);
+      toast.success('Lesson deleted successfully.');
+    } catch (error) {
+       console.error(error);
+       toast.error('Failed to delete lesson.');
+    } finally {
+      setIsDeletingLesson(null);
     }
   };
 
@@ -315,13 +438,21 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-surface">{mod.title}</span>
                     <span className="text-[10px] tracking-[0.2em] uppercase text-accent px-2 py-0.5 rounded bg-ink border border-admin-border font-bold ml-2">
-                      {mod.lessons.length} Items
+                      {mod.sections.reduce((acc, sec) => acc + sec.lessons.length, 0)} Items
                     </span>
                   </div>
                   <span className="text-[13px] text-admin-muted mt-0.5">{mod.description}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  <button 
+                    disabled={isDeletingModule === mod.id}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50" 
+                    onClick={(e) => { e.stopPropagation(); handleDeleteModule(mod.id); }}
+                    title="Delete Module"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                   <button className="w-8 h-8 rounded-full flex items-center justify-center text-admin-muted hover:text-surface hover:bg-white/5 transition-colors" onClick={(e) => e.stopPropagation()}>
                     <Settings className="w-4 h-4" />
                   </button>
@@ -331,58 +462,91 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                 </div>
               </div>
 
-              {/* Lessons List (Expandable) */}
+              {/* Sections & Lessons List (Expandable) */}
               {isExpanded && (
-                <div className="flex flex-col bg-ink p-5 gap-2">
-                  {mod.lessons.map((lesson) => (
-                    <div key={lesson.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-admin-surface border border-transparent hover:border-admin-border transition-colors group/item">
-                      <div className="w-6 flex justify-center text-[#4A4A5C] group-hover/item:text-admin-muted cursor-grab opacity-0 group-hover/item:opacity-100 transition-opacity">
-                        <GripVertical className="w-4 h-4" />
-                      </div>
-                      
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                        lesson.type === 'video' ? 'bg-blue-500/10 text-blue-400' :
-                        lesson.type === 'article' ? 'bg-emerald-500/10 text-emerald-400' :
-                        'bg-amber-500/10 text-amber-400'
-                      }`}>
-                        {lesson.type === 'video' ? <Video className="w-4 h-4" /> :
-                         lesson.type === 'article' ? <FileText className="w-4 h-4" /> :
-                         <BookOpen className="w-4 h-4" />}
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col">
-                        <span className="text-[13px] font-medium text-surface">{lesson.title}</span>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-[10px] font-semibold text-admin-muted uppercase tracking-[0.2em]">{lesson.type}</span>
-                          <span className="text-[#4A4A5C] text-[10px]">•</span>
-                          <span className="text-[11px] font-medium text-admin-muted">{lesson.duration}</span>
+                <div className="flex flex-col bg-ink p-5 gap-6">
+                  {mod.sections.map(section => (
+                     <div key={section.id} className="flex flex-col gap-2">
+                        {/* Section Header */}
+                        <div className="flex items-center justify-between group/sec mb-1 border-b border-admin-border pb-2">
+                           <div className="flex items-center gap-2">
+                             <div className="w-6 flex justify-center text-[#4A4A5C] opacity-0 group-hover/sec:opacity-100 cursor-grab transition-opacity">
+                               <GripVertical className="w-4 h-4" />
+                             </div>
+                             <h4 className="text-[12px] font-bold tracking-[0.1em] uppercase text-admin-muted">{section.title}</h4>
+                           </div>
+                           <div className="flex items-center gap-4 pr-2">
+                             <button onClick={(e) => { e.stopPropagation(); handleCreateLesson(mod.id, section.id); }} className="text-[10px] uppercase font-bold tracking-[0.1em] text-accent hover:text-white transition-colors opacity-0 group-hover/sec:opacity-100 flex items-center gap-1">
+                               <Plus className="w-3 h-3"/> Content
+                             </button>
+                             <button disabled={isDeletingSection === section.id} onClick={(e) => { e.stopPropagation(); handleDeleteSection(mod.id, section.id); }} className="text-[10px] uppercase font-bold text-red-500 hover:text-red-400 transition-colors opacity-0 group-hover/sec:opacity-100">
+                               Delete
+                             </button>
+                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-4">
-                        <span className={`text-[9px] font-semibold tracking-[0.2em] uppercase px-2 py-0.5 rounded ${
-                          lesson.status === 'published' ? 'bg-admin-surface-hover border border-admin-border text-accent' : 'bg-transparent text-admin-muted'
-                        }`}>
-                          {lesson.status}
-                        </span>
-                        <button 
-                          onClick={() => setEditingLesson(lesson)}
-                          className="text-[10px] font-semibold tracking-[0.2em] uppercase text-admin-muted hover:text-surface opacity-0 group-hover/item:opacity-100 transition-all font-sans"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </div>
+
+                        {/* Lessons inside Section */}
+                        {section.lessons.map(lesson => (
+                           <div key={lesson.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-admin-surface border border-transparent hover:border-admin-border transition-colors group/item ml-6">
+                             <div className="w-6 flex justify-center text-[#4A4A5C] group-hover/item:text-admin-muted cursor-grab opacity-0 group-hover/item:opacity-100 transition-opacity">
+                               <GripVertical className="w-4 h-4" />
+                             </div>
+                             
+                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                               lesson.type === 'video' ? 'bg-blue-500/10 text-blue-400' :
+                               lesson.type === 'article' ? 'bg-emerald-500/10 text-emerald-400' :
+                               'bg-amber-500/10 text-amber-400'
+                             }`}>
+                               {lesson.type === 'video' ? <Video className="w-4 h-4" /> :
+                                lesson.type === 'article' ? <FileText className="w-4 h-4" /> :
+                                <BookOpen className="w-4 h-4" />}
+                             </div>
+                             
+                             <div className="flex-1 flex flex-col">
+                               <span className="text-[13px] font-medium text-surface">{lesson.title}</span>
+                               <div className="flex items-center gap-3 mt-1">
+                                 <span className="text-[10px] font-semibold text-admin-muted uppercase tracking-[0.2em]">{lesson.type}</span>
+                                 <span className="text-[#4A4A5C] text-[10px]">•</span>
+                                 <span className="text-[11px] font-medium text-admin-muted">{lesson.duration}</span>
+                               </div>
+                             </div>
+                             
+                               <div className="flex items-center gap-4">
+                                 <span className={`text-[9px] font-semibold tracking-[0.2em] uppercase px-2 py-0.5 rounded ${
+                                   lesson.status === 'published' ? 'bg-admin-surface-hover border border-admin-border text-accent' : 'bg-transparent text-admin-muted'
+                                 }`}>
+                                   {lesson.status}
+                                 </span>
+                                 <button 
+                                   onClick={(e) => { e.stopPropagation(); setEditingLesson(lesson); }}
+                                   className="text-[10px] font-semibold tracking-[0.2em] uppercase text-admin-muted hover:text-surface opacity-0 group-hover/item:opacity-100 transition-all font-sans"
+                                 >
+                                   Edit
+                                 </button>
+                                 <button 
+                                   onClick={(e) => { e.stopPropagation(); handleDeleteLesson(mod.id, section.id, lesson.id); }}
+                                   disabled={isDeletingLesson === lesson.id}
+                                   className="text-[10px] font-semibold tracking-[0.2em] uppercase text-red-500 hover:text-red-400 opacity-0 group-hover/item:opacity-100 transition-all font-sans disabled:opacity-50"
+                                 >
+                                   {isDeletingLesson === lesson.id ? 'Deleting...' : 'Delete'}
+                                 </button>
+                               </div>
+                           </div>
+                        ))}
+                        {section.lessons.length === 0 && (
+                           <div className="ml-14 text-[11px] text-admin-muted py-2">No lessons in this section.</div>
+                        )}
+                     </div>
                   ))}
-                  
-                  {/* Add New Item Button */}
-                  <div className="mt-2 ml-14">
+
+                  {/* Add New Section Button */}
+                  <div className="mt-2 ml-6">
                     <button 
-                      onClick={() => handleCreateLesson(mod.id)}
+                      onClick={() => handleCreateSection(mod.id)}
                       className="flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-semibold tracking-[0.2em] uppercase text-admin-muted hover:text-surface hover:bg-admin-surface-hover transition-colors border border-dashed border-admin-border hover:border-admin-border-hover w-fit"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      Add Content
+                      Add Section
                     </button>
                   </div>
                 </div>
@@ -436,12 +600,23 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                       <label className="text-[10px] font-semibold tracking-[0.2em] uppercase text-admin-muted">Mux Playback ID</label>
+                       <div className="flex items-center justify-between">
+                         <label className="text-[10px] font-semibold tracking-[0.2em] uppercase text-admin-muted">Video URL</label>
+                         {editingLesson.muxPlaybackId && (
+                           <button 
+                             type="button"
+                             onClick={() => setEditingLesson({...editingLesson, muxPlaybackId: '', type: 'article'})}
+                             className="text-[9px] font-bold tracking-[0.2em] uppercase text-red-400 hover:text-red-300 transition-colors"
+                           >
+                             Remove Video
+                           </button>
+                         )}
+                       </div>
                        <input 
                          type="text" 
                          value={editingLesson.muxPlaybackId || ''}
                          onChange={(e) => setEditingLesson({...editingLesson, muxPlaybackId: e.target.value, type: e.target.value ? 'video' : 'article'})}
-                         placeholder="e.g. xyz123abc..."
+                         placeholder="https://..."
                          className="w-full bg-ink border border-admin-border rounded-xl px-4 py-3 text-[13px] font-medium text-surface focus:outline-none focus:border-accent/50 transition-colors font-mono"
                        />
                     </div>
@@ -498,6 +673,19 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                       className="w-full bg-ink border border-admin-border rounded-xl px-4 py-3 text-[13px] text-surface focus:outline-none focus:border-accent/50 transition-colors font-mono resize-y leading-relaxed"
                     />
                  </div>
+              </div>
+
+              {/* Quiz Builder */}
+              <div className="space-y-4">
+                 <div className="flex items-center gap-2 mb-2">
+                    <h4 className="text-[13px] font-medium text-surface">Quiz Gatekeeper</h4>
+                    <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-admin-muted ml-auto">Adaptive Timestamps</span>
+                 </div>
+                 <QuizBuilder 
+                    lessonId={editingLesson.id}
+                    quizData={editingLesson.quizData || []} 
+                    onChange={(newQuizData) => setEditingLesson({ ...editingLesson, quizData: newQuizData })} 
+                 />
               </div>
 
             </div>

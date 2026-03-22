@@ -30,9 +30,7 @@ export const CURRICULUM_WEEKS: Week[] = [
             {
                 title: "The Builder Environment",
                 lessons: [
-                    { title: "The Agentic Stack & Setup" },
-                    { title: "The Logic of Delegation" },
-                    { title: "The Architecture Workflow" },
+                    { title: "Learn the basics of Google Antigravity720p" }
                 ],
             },
             {

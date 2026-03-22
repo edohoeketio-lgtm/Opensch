@@ -97,32 +97,49 @@ model Module {
   isPublished Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  lessons     Lesson[]
+  sections    Section[]
   resources   Resource[]
   course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([courseId])
 }
 
+model Section {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  moduleId    String     @db.Uuid
+  title       String
+  description String?
+  order       Int
+  isPublished Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  lessons     Lesson[]
+  module      Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([moduleId])
+}
+
 model Lesson {
   id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  moduleId            String          @db.Uuid
+  sectionId           String          @db.Uuid
   title               String
   description         String?
   order               Int
   muxPlaybackId       String?
   isPreview           Boolean         @default(false)
   isPublished         Boolean         @default(false)
+  videoDuration       Int?
+  quizData            Json?
   transcriptRawText   String?
   transcriptCleanText String?
   transcriptSegments  Json?
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
   assignments         Assignment[]
-  module              Module          @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  section             Section         @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   progressStates      ProgressState[]
 
-  @@index([moduleId])
+  @@index([sectionId])
 }
 
 model ProgressState {
