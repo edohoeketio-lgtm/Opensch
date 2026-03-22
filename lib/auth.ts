@@ -7,35 +7,48 @@ import prisma from "./prisma";
  * Since no external Auth provider (Supabase Auth, Clerk, NextAuth) is currently installed,
  * this utility simulates a secure server-side session extraction.
  */
+import { createServerClient } from '@supabase/ssr';
+
 export const getAuthenticatedUser = cache(async () => {
-  // In a real app, this would be:
-  // const supabase = createServerComponentClient({ cookies })
-  // const { data: { session } } = await supabase.auth.getSession()
-  // return session?.user
-
-  // MOCK ROLE SWITCHING VIA COOKIE
   const cookieStore = await cookies();
-  const mockEmail = cookieStore.get('opensch_mock_email')?.value;
-  let user = null;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-  if (mockEmail) {
-    user = await prisma.user.findUnique({
-      where: { email: mockEmail },
-      include: { profile: true }
-    });
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() { return cookieStore.getAll() },
+      setAll() {}
+    }
+  });
+
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  
+  if (!authUser || !authUser.email) {
+    return null;
   }
 
-  // Fallback to generating isolated unique student if no user found
+  const userEmail = authUser.email;
+
+  let user = await prisma.user.findUnique({
+    where: { email: userEmail },
+    include: { profile: true }
+  });
+
+  // If user authenticated via Supabase but isn't in Prisma DB yet, create them.
   if (!user) {
-    const fallbackEmail = mockEmail || "student@opensch.com";
-    user = await prisma.user.upsert({
-      where: { email: fallbackEmail },
-      update: {
-        role: "ADMIN"
-      },
-      create: {
-        email: fallbackEmail,
-        role: "ADMIN",
+    // Super Admin Check
+    const isSuperAdmin = userEmail.toLowerCase() === (process.env.SUPER_ADMIN_EMAIL || '').toLowerCase();
+    
+    user = await prisma.user.create({
+      data: {
+        email: userEmail,
+        role: isSuperAdmin ? "ADMIN" : "STUDENT",
+        profile: {
+          create: {
+            fullName: userEmail.split('@')[0], 
+            avatarUrl: `https://api.dicebear.com/7.x/notionists/svg?seed=${userEmail}&backgroundColor=transparent`
+          }
+        }
       },
       include: { profile: true }
     });
