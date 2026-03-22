@@ -40,8 +40,8 @@ export default function InstructorsClient({ faculty }: { faculty: UI_Instructor[
 
       if (!res.ok) throw new Error(data.error || 'Failed to invite instructor');
 
-      toast.success('Instructor invited!', {
-        description: 'Secure invite link dispatched to email.'
+      toast.success(data.message.includes('resent') ? 'Invite Resent!' : 'Instructor invited!', {
+        description: data.message
       });
       setEmailed(true);
       setEmail('');

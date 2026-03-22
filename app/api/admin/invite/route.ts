@@ -20,16 +20,19 @@ export async function POST(req: Request) {
       where: { email }
     });
 
+    let message = 'Instructor invited and emailed successfully.';
+
     if (newInstructor) {
       if (newInstructor.role === 'INSTRUCTOR') {
-        return NextResponse.json({ error: 'User is already an instructor' }, { status: 400 });
+        // Instead of erroring out if they already exist, we treat this as a "Resend Invite" action.
+        message = 'Invite link resent successfully.';
+      } else {
+        // Upgrade existing standard user to instructor
+        newInstructor = await prisma.user.update({
+          where: { email },
+          data: { role: 'INSTRUCTOR' }
+        });
       }
-      
-      // Upgrade existing user
-      newInstructor = await prisma.user.update({
-        where: { email },
-        data: { role: 'INSTRUCTOR' }
-      });
     } else {
       // Create new instructor
       newInstructor = await prisma.user.create({
@@ -65,7 +68,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Instructor invited and emailed successfully.',
+      message: message, // Uses dynamic message defined above
       emailed: true // Flag to tell the UI the link was dispatched natively
     });
 
