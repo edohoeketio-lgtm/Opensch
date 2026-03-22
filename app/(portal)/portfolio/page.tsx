@@ -6,6 +6,7 @@ import { useRef, useState, useCallback } from 'react';
 import { domToPng } from 'modern-screenshot';
 import Cropper from 'react-easy-crop';
 import { SocialShareCard } from './components/SocialShareCard';
+import Image from 'next/image';
 
 const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
@@ -277,11 +278,9 @@ export default function PortfolioPage() {
             {/* Project Screenshot (Right) - Crisp & Real */}
             <div className="lg:w-[55%] bg-[#1C1C1E] flex items-center justify-center p-8 lg:p-12 relative group">
                <div className="w-full aspect-[4/3] rounded shadow-2xl overflow-hidden border border-[#2D2D2D] bg-[#1C1C1E]">
-                  <img 
-                    src={featuredBuild.previewImg} 
+                  <Image width={600} height={600} src={featuredBuild.previewImg} 
                     alt="Product Screenshot"
-                    className="w-full h-full object-cover"
-                  />
+                    className="w-full h-full object-cover" />
                </div>
                
                <input 

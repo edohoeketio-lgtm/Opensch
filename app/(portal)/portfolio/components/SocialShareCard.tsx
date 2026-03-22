@@ -1,5 +1,6 @@
 import React from 'react';
 import { Layers } from 'lucide-react';
+import Image from 'next/image';
 
 interface SocialShareCardProps {
   studentName: string;
@@ -82,12 +83,10 @@ export const SocialShareCard = React.forwardRef<HTMLDivElement, SocialShareCardP
         {/* Right: The Screenshot/Preview (Framed) */}
         <div className="w-[500px] h-full rounded-2xl border border-[#2D2D2D] bg-[#1C1C1E] p-2 flex-shrink-0 shadow-2xl shadow-black">
            <div className="w-full h-full rounded-xl overflow-hidden bg-[#1C1C1E] border border-[#2D2D2D] relative">
-              <img 
-                src={featuredBuild.previewImg} 
+              <Image width={600} height={600} src={featuredBuild.previewImg} 
                 crossOrigin="anonymous"
                 className="w-full h-full object-cover"
-                alt="Project Preview"
-              />
+                alt="Project Preview" />
               {/* Subtle overlay to blend into the dark theme if the image is too bright */}
               <div className="absolute inset-0 bg-black/10 pointer-events-none" />
            </div>

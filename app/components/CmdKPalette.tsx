@@ -5,8 +5,6 @@ import { Search, MonitorPlay, MessageSquare, Zap, BookOpen, ChevronRight, Play, 
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
-import { MOCK_FEED_ITEMS } from '@/lib/mock-data';
-
 // Indexed Search Data
 const BASE_SEARCH_INDEX = [
   { id: '1', category: 'Quick Actions', title: 'Resume Program', subtitle: 'Implementing OAuth Providers', icon: Play, href: '/dashboard', action: 'route' },
@@ -23,18 +21,7 @@ const BASE_SEARCH_INDEX = [
   { id: '10', category: 'Settings', title: 'Notification Preferences', subtitle: 'Configure email and platform alerts', icon: Bell, href: '/settings', action: 'route' },
 ];
 
-const SEARCH_INDEX = [
-  ...BASE_SEARCH_INDEX,
-  ...MOCK_FEED_ITEMS.map((post) => ({
-    id: `post-${post.id}`,
-    category: 'Campus Discussions',
-    title: post.title,
-    subtitle: `${post.type} by ${post.user.name} • ${post.content.substring(0, 60)}...`,
-    icon: MessageSquare,
-    href: `/feed/${post.id}`,
-    action: 'route'
-  }))
-];
+const SEARCH_INDEX = BASE_SEARCH_INDEX;
 
 export function CmdKPalette() {
   const [open, setOpen] = useState(false);

@@ -4,7 +4,6 @@ import { MessageSquare, Target, Award, ArrowUpRight, CheckCircle2, HelpCircle, B
 import Link from 'next/link';
 import { ClientFeed } from './ClientFeed';
 import prisma from '@/lib/prisma';
-import { MOCK_FEED_ITEMS } from '@/lib/mock-data';
 import { CATEGORY_META_MAP } from '@/lib/constants';
 
 export default async function CampusFeedPage() {
@@ -92,8 +91,7 @@ export default async function CampusFeedPage() {
     };
   });
 
-  // Interleave Mock Feed items below our real items for the demo feeling populated
-  const feedItems = [...dynamicBroadcastItems, ...dynamicThreadItems, ...MOCK_FEED_ITEMS];
+  const feedItems = [...dynamicBroadcastItems, ...dynamicThreadItems];
 
   return (
     <div className="flex-1 overflow-y-auto bg-transparent relative">

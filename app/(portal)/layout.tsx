@@ -9,6 +9,7 @@ import { Sidebar } from './components/Sidebar';
 import { ToastProvider } from './components/ToastContext';
 import { getMyProfile } from '@/app/actions/settings';
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '@/app/actions/notifications';
+import Image from 'next/image';
 
 const formatNotifTime = (date: Date) => {
   const diffInMinutes = Math.floor((new Date().getTime() - date.getTime()) / 60000);
@@ -197,7 +198,7 @@ export default function PortalLayout({
              {/* Minimal Profile Escape Hatch */}
              <Link href="/settings" className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1C1C1E] overflow-hidden relative cursor-pointer border border-[#2D2D2D] hover:border-[#2D2D2D] transition-all duration-300">
                 {profile?.avatarUrl ? (
-                  <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+                  <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
                 ) : (
                   <span className="text-[10px] font-semibold text-[#888888]">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
                 )}

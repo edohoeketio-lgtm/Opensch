@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, BookOpen, MessageSquare, Briefcase, ChevronRight, CheckCircle, ChevronLeft, Award, Calendar, Bookmark } from 'lucide-react';
 import { getMyProfile } from '@/app/actions/settings';
+import Image from 'next/image';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -87,7 +88,7 @@ export function Sidebar() {
          <Link href="/settings" className={`block p-4 rounded-2xl bg-transparent border border-[#2D2D2D] hover:bg-white/5 transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-[#1C1C1E] overflow-hidden relative border border-[#2D2D2D] shrink-0">
-                  <img src={profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent"} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />
+                  <Image width={600} height={600} src={profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent"} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />
                </div>
                {!isCollapsed && (
                  <div className="flex flex-col whitespace-nowrap">
