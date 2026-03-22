@@ -5,6 +5,7 @@ import { Play, Target, MessageSquare, ChevronRight, Eye } from 'lucide-react';
 import { CURRICULUM_WEEKS } from '@/lib/content';
 import { useTimeGreeting, extractFirstName } from '@/lib/utils/time';
 import CurriculumCopilot from '../components/CurriculumCopilot';
+import Image from 'next/image';
 
 export default function DashboardClient({ 
   studentName, 
@@ -85,7 +86,7 @@ export default function DashboardClient({
                   {/* Media */}
                   <div className="w-full md:w-5/12 bg-[#111111] relative overflow-hidden flex-shrink-0 border-b md:border-b-0 md:border-r border-[#2D2D2D] min-h-[200px] md:min-h-0">
                      <div className="absolute inset-0 bg-[#1D1D21]/40 mix-blend-overlay z-10 transition-colors duration-500 group-hover:bg-[#1D1D21]/20"></div>
-                     <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600&auto=format&fit=crop" alt="Code" className="w-full h-full object-cover opacity-40 grayscale group-hover:scale-105 group-hover:opacity-50 transition-all duration-[3000ms] ease-out absolute inset-0 z-0" />
+                     <Image width={600} height={600} src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=600&auto=format&fit=crop" alt="Code" className="w-full h-full object-cover opacity-40 grayscale group-hover:scale-105 group-hover:opacity-50 transition-all duration-[3000ms] ease-out absolute inset-0 z-0" />
                      {/* Overlay Icon */}
                      <div className="absolute inset-0 flex items-center justify-center z-20">
                         <div className="w-14 h-14 rounded-full bg-[#1C1C1E]/80 backdrop-blur-md border border-[#2D2D2D] flex items-center justify-center group-hover:bg-[#F5F2EB] transition-colors duration-300">
@@ -282,7 +283,7 @@ export default function DashboardClient({
                  <Link href={`/feed/${activity.id}`} key={activity.id} className="flex gap-4 p-4 rounded-xl border border-transparent hover:border-[#2D2D2D] hover:bg-[#1C1C1E] transition-colors cursor-pointer group">
                     <div className="w-10 h-10 rounded-full bg-[#1D1D21] shrink-0 flex items-center justify-center overflow-hidden border border-[#2D2D2D]">
                        {activity.authorAvatar ? (
-                         <img src={activity.authorAvatar} alt={activity.authorName} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" />
+                         <Image width={600} height={600} src={activity.authorAvatar} alt={activity.authorName} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" />
                        ) : (
                          <span className="text-[#FFFFFF] text-sm font-bold">{activity.authorInitial}</span>
                        )}

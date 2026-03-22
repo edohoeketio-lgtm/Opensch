@@ -8,6 +8,7 @@ import { createFeedPost, incrementThreadUpvote } from '@/app/actions/threads';
 import { getMyProfile } from '@/app/actions/settings';
 import { getAvatarColor } from '@/lib/utils';
 import { InteractivePoll } from './InteractivePoll';
+import Image from 'next/image';
 
 export type UserType = {
   name: string;
@@ -271,7 +272,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
           >
             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-[#2D2D2D] bg-[#1C1C1E] flex items-center justify-center">
               {profile?.avatarUrl ? (
-                <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+                <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
               ) : (
                 <span className="text-[#FFFFFF] font-bold text-sm">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
               )}
@@ -288,7 +289,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[#2D2D2D] bg-[#1C1C1E] flex items-center justify-center">
                   {profile?.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
+                    <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
                   ) : (
                     <span className="text-[#FFFFFF] font-bold text-xs">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
                   )}
@@ -312,7 +313,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
               {postImage && (
                 <div className="mt-3 relative inline-block">
                   <div className="relative rounded-xl overflow-hidden border border-[#2D2D2D] max-w-sm">
-                    <img src={postImage} alt="Upload preview" className="w-full h-auto object-cover max-h-[300px]" />
+                    <Image width={600} height={600} src={postImage} alt="Upload preview" className="w-full h-auto object-cover max-h-[300px]" />
                     <button 
                       onClick={() => setPostImage(null)} 
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white hover:bg-black transition-colors border border-white/20"
@@ -515,7 +516,7 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                        </p>
                        {item.image && (
                          <div className="mt-4 rounded-xl overflow-hidden border border-[#2D2D2D]">
-                           <img src={item.image} alt="Attached" className="w-full max-h-[400px] object-cover" />
+                           <Image width={600} height={600} src={item.image} alt="Attached" className="w-full max-h-[400px] object-cover" />
                          </div>
                        )}
                        {item.video && (

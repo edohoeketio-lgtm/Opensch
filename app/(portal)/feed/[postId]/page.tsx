@@ -7,6 +7,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { ThreadReplies } from './ThreadReplies';
 import { PostFooterActions } from './PostFooterActions';
 import { InteractivePoll } from '../InteractivePoll';
+import Image from 'next/image';
 
 const CATEGORY_META_MAP: Record<string, any> = {
   'Announcement': { icon: Bell, color: 'text-rose-500', bg: 'bg-rose-500/10' },
@@ -228,7 +229,7 @@ export default async function ThreadViewPage({ params }: { params: Promise<{ pos
 
               {post.image && (
                 <div className="mt-4 mb-4 rounded-xl overflow-hidden border border-[#2D2D2D]">
-                  <img src={post.image} alt="Attached" className="w-full max-h-[500px] object-cover" />
+                  <Image width={600} height={600} src={post.image} alt="Attached" className="w-full max-h-[500px] object-cover" />
                 </div>
               )}
               {post.video && (
