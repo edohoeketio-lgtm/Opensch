@@ -26,7 +26,7 @@ export default async function RosterPage() {
         
         return {
           id: user.id,
-          name: user.profile?.firstName ? `${user.profile.firstName} ${user.profile.lastName}` : (user.email.split('@')[0] || 'Unknown Student'),
+          name: user.profile?.fullName || (user.email.split('@')[0] || 'Unknown Student'),
           email: user.email,
           cohort: user.cohort?.name || 'Unassigned',
           progress: enrollment ? enrollment.cachedProgress : 0,
