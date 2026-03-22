@@ -7,8 +7,11 @@ import { revalidatePath } from "next/cache";
 export async function inviteInstructor(email: string) {
   try {
     const user = await getAuthenticatedUser();
-    if (!user || user.role !== 'ADMIN') {
-      return { error: 'Unauthorized' };
+    if (!user) {
+      return { error: 'Auth Context Lost: Could not identify session via cookies. Please refresh.' };
+    }
+    if (user.role !== 'ADMIN') {
+      return { error: `Permission Denied: Current role is ${user.role}` };
     }
 
     if (!email || !email.includes('@')) {
@@ -84,7 +87,7 @@ export async function inviteInstructor(email: string) {
         await prisma.user.delete({ where: { email } });
       }
       console.error('Supabase Admin Invite error:', inviteErrorResponse);
-      return { error: inviteErrorResponse.message || 'Failed to securely dispatch invite via Supabase API' };
+      return { error: `Supabase Admin API Rejected: ${inviteErrorResponse.message}` };
     }
 
     revalidatePath('/admin/instructors');
