@@ -94,7 +94,7 @@ export default function LiveOpsClient({ initialEvents, cohorts }: LiveOpsClientP
       {/* Creation Modal */}
       {isCreating && (
         <div className="bg-black/40 border border-white/20 rounded-xl p-6 mb-8 relative">
-           <button onClick={() => setIsCreating(false)} className="absolute top-4 right-4 text-white/40 hover:text-white">✕</button>
+           <button onClick={() => setIsCreating(false)} className="absolute top-4 right-4 text-white/40 hover:text-white">x</button>
            <h3 className="text-lg font-medium text-white mb-4">Launch New Sync</h3>
            
            <form onSubmit={handleCreateEvent} className="grid grid-cols-2 gap-4">

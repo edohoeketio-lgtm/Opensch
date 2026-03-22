@@ -95,7 +95,7 @@ export default function LoginPage() {
               disabled={loading !== null}
               className={`w-full font-medium flex justify-center items-center rounded-lg px-4 py-3 text-sm transition-colors shadow-lg shadow-white/5 disabled:opacity-100 ${loading === 'sent' ? 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-none pointer-events-none' : 'bg-white text-black hover:bg-neutral-200'}`}
             >
-              {loading === 'email' ? 'Sending Link...' : loading === 'sent' ? '✨ Check your email for a magic link' : 'Continue with Email'}
+              {loading === 'email' ? 'Sending Link...' : loading === 'sent' ? ' Check your email for a magic link' : 'Continue with Email'}
             </button>
           </form>
 
