@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.41",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@pinecone-database/pinecone": "^7.1.0",
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",

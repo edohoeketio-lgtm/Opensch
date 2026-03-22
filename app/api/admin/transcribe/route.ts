@@ -127,7 +127,7 @@ export async function POST(req: Request) {
     // Extract 32kbps mono audio
     let ffmpegPath;
     try {
-      ffmpegPath = require('ffmpeg-static');
+      ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
     } catch(e) { /* ignore */ }
     
     try {
