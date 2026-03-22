@@ -43,7 +43,7 @@ export default function DashboardClient({
   const activeWeekData = CURRICULUM_WEEKS.find(w => w.number === activeWeekNumber) || CURRICULUM_WEEKS[0];
 
   return (
-    <div className="p-8 md:p-14 max-w-[1400px] mx-auto text-[#FFFFFF]">
+    <div className="p-4 md:p-14 max-w-[1400px] mx-auto text-[#FFFFFF] pb-24 md:pb-14">
       
       {/* Impersonation Banner */}
       {isImpersonating && (
