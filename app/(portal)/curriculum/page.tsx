@@ -10,7 +10,9 @@ export default async function CurriculumPage() {
   const user = await getAuthenticatedUser();
   
   let progressMap: Record<string, boolean> = {};
+  let isInstructor = false;
   if (user) {
+    isInstructor = user.role === 'INSTRUCTOR' || user.role === 'ADMIN';
     const progress = await prisma.progressState.findMany({
       where: { userId: user.id }
     });
@@ -19,5 +21,5 @@ export default async function CurriculumPage() {
     });
   }
 
-  return <CurriculumClient course={course} progressMap={progressMap} />;
+  return <CurriculumClient course={course} progressMap={progressMap} isInstructor={isInstructor} />;
 }

@@ -26,6 +26,7 @@ export default async function LessonClassroomPage({
   if (!lesson) return notFound();
 
   const user = await getAuthenticatedUser();
+  const isInstructor = user?.role === 'INSTRUCTOR' || user?.role === 'ADMIN';
   const targetUserId = resolvedSearchParams.studentId || user?.id;
   let isCompleted = false;
   if (targetUserId) {
@@ -95,7 +96,7 @@ export default async function LessonClassroomPage({
        lessonOrder={lesson.order}
        videoUrl={lesson.muxPlaybackId}
        quizData={(lesson as any).quizData}
-       isReadOnly={!!resolvedSearchParams.studentId}
+       isReadOnly={isInstructor || !!resolvedSearchParams.studentId}
        transcriptSegments={(lesson as any).transcriptSegments}
        transcriptCleanText={(lesson as any).transcriptCleanText}
        description={lesson.description}

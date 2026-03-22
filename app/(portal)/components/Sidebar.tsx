@@ -83,15 +83,15 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Admin Mode Toggle (Only visible if ADMIN) */}
-      {profile?.role === 'ADMIN' && (
+      {/* Admin Mode Toggle (Visible for ADMIN and INSTRUCTOR) */}
+      {profile?.role && ['ADMIN', 'INSTRUCTOR'].includes(profile.role) && (
         <div className={`px-4 pb-2 ${isCollapsed ? 'px-3' : ''}`}>
           <Link 
             href="/admin" 
             className={`flex items-center gap-3 py-2.5 rounded-xl transition-all duration-300 group bg-[#B08D57]/10 text-[#B08D57] hover:bg-[#B08D57]/20 border border-[#B08D57]/30 cursor-pointer shadow-[0_0_10px_rgba(176,141,87,0.1)] ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
           >
             <Briefcase className="w-5 h-5 shrink-0" />
-            {!isCollapsed && <span className="font-semibold text-xs tracking-[0.1em] uppercase whitespace-nowrap">Admin Mode</span>}
+            {!isCollapsed && <span className="font-semibold text-xs tracking-[0.1em] uppercase whitespace-nowrap">Command Center</span>}
           </Link>
         </div>
       )}

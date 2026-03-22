@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { CheckCircle, Play, Lock, ChevronRight, BookOpen, Clock, FileText } from 'lucide-react';
 
-export default function CurriculumClient({ course, progressMap = {} }: { course: any, progressMap?: Record<string, boolean> }) {
+export default function CurriculumClient({ course, progressMap = {}, isInstructor = false }: { course: any, progressMap?: Record<string, boolean>, isInstructor?: boolean }) {
   
   const allLessonsInOrder = course.modules.flatMap((m: any) => m.sections ? m.sections.flatMap((s: any) => s.lessons) : []);
   let firstIncompleteLessonId: string | null = null;
@@ -71,9 +71,9 @@ export default function CurriculumClient({ course, progressMap = {} }: { course:
         )}
 
         {course.modules.map((week: any, weekIndex: number) => {
-          const isMastered = weekIndex < currentActiveWeek;
-          const isActive = weekIndex === currentActiveWeek;
-          const isLocked = weekIndex > currentActiveWeek;
+          const isMastered = isInstructor || weekIndex < currentActiveWeek;
+          const isActive = !isInstructor && weekIndex === currentActiveWeek;
+          const isLocked = !isInstructor && weekIndex > currentActiveWeek;
           
           const isExpanded = expandedWeeks.includes(weekIndex);
           const allSprints = week.sections ? week.sections.flatMap((s: any) => s.lessons) : [];
@@ -152,9 +152,9 @@ export default function CurriculumClient({ course, progressMap = {} }: { course:
                               )}
                               {section.lessons?.map((sprint: any, idx: number) => {
                            const sprintNumber = idx + 1;
-                           const isSprintMastered = progressMap[sprint.id] === true;
-                           const isSprintActive = sprint.id === firstIncompleteLessonId;
-                           const isSprintLocked = !isSprintMastered && !isSprintActive;
+                           const isSprintMastered = isInstructor || progressMap[sprint.id] === true;
+                           const isSprintActive = !isInstructor && sprint.id === firstIncompleteLessonId;
+                           const isSprintLocked = !isInstructor && !isSprintMastered && !isSprintActive;
 
                            const sprintUrl = `/course/${course.id}/module/${week.id}/lesson/${sprint.id}`;
 

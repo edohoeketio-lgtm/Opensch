@@ -1,0 +1,78 @@
+
+> opensch@1.0.0 dev
+> next dev --turbopack
+
+ ⚠ Invalid next.config.mjs options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverComponentsExternalPackages', 'outputFileTracingIncludes' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ `experimental.serverComponentsExternalPackages` has been moved to `serverExternalPackages`. Please update your next.config.mjs file accordingly.
+ ⚠ `experimental.outputFileTracingIncludes` has been moved to `outputFileTracingIncludes`. Please update your next.config.mjs file accordingly.
+   ▲ Next.js 15.5.12 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.10.20:3001
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     · outputFileTracingIncludes
+     · serverComponentsExternalPackages
+
+ ✓ Starting...
+ ✓ Compiled middleware in 196ms
+ ✓ Ready in 1462ms
+ ○ Compiling /curriculum ...
+ ✓ Compiled /curriculum in 4.9s
+prisma:error 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].progressState.findMany()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__3775e835._.js:766:167
+
+  763 let isInstructor = false;
+  764 if (user) {
+  765     isInstructor = user.role === 'INSTRUCTOR' || user.role === 'ADMIN';
+→ 766     const progress = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].progressState.findMany(
+Invalid input value: invalid input syntax for type uuid: "mock-instructor-id"
+ ⨯ Error [PrismaClientKnownRequestError]: 
+Invalid `__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].progressState.findMany()` invocation in
+/home/sk/Downloads/OpenSch/.next/server/chunks/ssr/[root-of-the-server]__3775e835._.js:766:167
+
+  763 let isInstructor = false;
+  764 if (user) {
+  765     isInstructor = user.role === 'INSTRUCTOR' || user.role === 'ADMIN';
+→ 766     const progress = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$prisma$2e$ts__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"].progressState.findMany(
+Invalid input value: invalid input syntax for type uuid: "mock-instructor-id"
+    at <unknown> (app/(portal)/curriculum/page.tsx:16:49)
+    at async CurriculumPage (app/(portal)/curriculum/page.tsx:16:22)
+  14 |   if (user) {
+  15 |     isInstructor = user.role === 'INSTRUCTOR' || user.role === 'ADMIN';
+> 16 |     const progress = await prisma.progressState.findMany({
+     |                                                 ^
+  17 |       where: { userId: user.id }
+  18 |     });
+  19 |     progress.forEach(p => { {
+  code: 'P2007',
+  meta: [Object],
+  clientVersion: '7.5.0',
+  digest: '272906934'
+}
+ GET /curriculum 200 in 7868ms
+ ✓ Compiled in 208ms
+ ✓ Compiled /curriculum in 82ms
+ POST /curriculum 200 in 891ms
+ POST /curriculum 200 in 256ms
+ POST /curriculum 200 in 226ms
+ GET /curriculum 200 in 2595ms
+ POST /curriculum 200 in 352ms
+ ⨯ The requested resource "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent" has type "image/svg+xml" but dangerouslyAllowSVG is disabled. Consider adding the "unoptimized" property to the <Image>.
+ ✓ Compiled middleware in 32ms
+ ✓ Compiled /curriculum in 48ms
+ ⨯ Error: Unauthorized access. You must be logged in to access the curriculum.
+    at getOrCreateCourse (app/actions/curriculum.ts:10:11)
+    at async CurriculumPage (app/(portal)/curriculum/page.tsx:9:18)
+   8 |   const user = await getAuthenticatedUser();
+   9 |   if (!user) {
+> 10 |     throw new Error("Unauthorized access. You must be logged in to access the curriculum.");
+     |           ^
+  11 |   }
+  12 |
+  13 |   const includeQuery = { {
+  digest: '475505682'
+}
+ GET /curriculum 200 in 382ms

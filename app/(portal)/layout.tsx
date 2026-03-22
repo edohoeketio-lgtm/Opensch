@@ -10,6 +10,7 @@ import { BottomMobileNav } from './components/BottomMobileNav';
 import { ToastProvider } from './components/ToastContext';
 import { getMyProfile } from '@/app/actions/settings';
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '@/app/actions/notifications';
+import { FacultyPreviewRibbon } from './components/FacultyPreviewRibbon';
 import Image from 'next/image';
 
 const formatNotifTime = (date: Date) => {
@@ -117,7 +118,7 @@ export default function PortalLayout({
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#111111]">
-        
+        <FacultyPreviewRibbon />
         {/* Top Utility Bar */}
         <header className="h-16 border-b border-[#2D2D2D] flex items-center justify-between px-4 md:px-8 shrink-0 bg-[#111111]/80 backdrop-blur-md z-50 sticky top-0">
           <div className="flex items-center gap-3">
