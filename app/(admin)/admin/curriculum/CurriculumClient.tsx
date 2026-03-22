@@ -676,6 +676,16 @@ export default function CurriculumClient({ initialModules, courseId }: { initial
                  <div className="flex items-center gap-2">
                     <Video className="w-4 h-4 text-surface" />
                     <h4 className="text-[13px] font-medium text-surface">Video Asset</h4>
+                    {editingLesson.muxPlaybackId && (
+                      <button
+                        type="button"
+                        onClick={retryTranscription}
+                        disabled={isUploading}
+                        className="ml-auto text-[10px] font-bold uppercase tracking-[0.1em] text-accent hover:text-accent/80 transition-colors px-2 py-1 bg-accent/10 rounded disabled:opacity-50"
+                      >
+                        {isUploading && transcriptionStatus?.includes('remote') ? 'Transcribing...' : 'Retry Transcription'}
+                      </button>
+                    )}
                  </div>
                  
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
