@@ -66,16 +66,37 @@ export async function POST(req: Request) {
 
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
     
-    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${siteUrl}/welcome`
-    });
+    let inviteErrorResponse = null;
 
-    if (inviteError) {
+    const dispatchInvite = async () => {
+      const { error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${siteUrl}/welcome`
+      });
+      return error;
+    };
+
+    inviteErrorResponse = await dispatchInvite();
+
+    // Workaround for resending invites:
+    // If the user already exists in Auth, `inviteUserByEmail` will fail with "User already registered".
+    // Since our app relies purely on Email matching for identity, and not Auth ID, we can safely 
+    // delete the shadow auth account and recreate it to force Supabase to dispatch a fresh invite email.
+    if (inviteErrorResponse && (inviteErrorResponse as any).code === 'email_exists') {
+      const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+      const existingAuthUser = users.find(u => u.email === email);
+      if (existingAuthUser) {
+         await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.id);
+         // Try dispatching again now that the auth record is wiped
+         inviteErrorResponse = await dispatchInvite();
+      }
+    }
+
+    if (inviteErrorResponse) {
       if (isNewCreation) {
         await prisma.user.delete({ where: { email } });
       }
-      console.error('Supabase Admin Invite error:', inviteError);
-      return NextResponse.json({ error: 'Failed to securely dispatch invite via Supabase API' }, { status: 500 });
+      console.error('Supabase Admin Invite error:', inviteErrorResponse);
+      return NextResponse.json({ error: inviteErrorResponse.message || 'Failed to securely dispatch invite via Supabase API' }, { status: 500 });
     }
 
     return NextResponse.json({ 
