@@ -48,7 +48,27 @@ export default function WelcomePage() {
           setErrorMsg('No active session found. Please request a new invite link.');
           setStatus('error');
         } else {
-          // It has an access token but didn't parse immediately, wait for onAuthStateChange
+          // Manually intercept and parse the implicit flow tokens
+          const hashStr = hash.substring(1);
+          const params = new URLSearchParams(hashStr);
+          const access_token = params.get('access_token');
+          const refresh_token = params.get('refresh_token');
+          
+          if (access_token && refresh_token) {
+            supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+              if (error) {
+                setErrorMsg(error.message);
+                setStatus('error');
+              } else {
+                setStatus('ready');
+                // Clean the URL bar so the tokens don't sit there
+                window.history.replaceState(null, '', window.location.pathname);
+              }
+            });
+          } else {
+             setErrorMsg('Invalid token format from invite link.');
+             setStatus('error');
+          }
         }
       }
     });
