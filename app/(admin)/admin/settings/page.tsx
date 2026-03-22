@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { GlobalSettingsForm } from '@/components/settings/GlobalSettingsForm';
 import { ProfileSettingsForm } from '@/components/settings/ProfileSettingsForm';
+import { NotificationSettingsForm } from '@/components/settings/NotificationSettingsForm';
 import { Settings } from 'lucide-react';
 
 export default async function AdminSettingsPage() {

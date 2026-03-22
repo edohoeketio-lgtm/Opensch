@@ -43,7 +43,7 @@ model Profile {
   username             String?  @unique
   timezone             String?
   experienceLevel      String?
-  avatarUrl            String?
+  avatarUrl            String   @default("https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent")
   githubHandle         String?
   linkedinUrl          String?
   bio                  String?

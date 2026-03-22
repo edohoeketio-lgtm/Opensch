@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
       email: email,
       options: {
-        emailRedirectTo: `${siteUrl}/onboarding/faculty`,
+        emailRedirectTo: `${siteUrl}/onboarding`,
         shouldCreateUser: true
       }
     });

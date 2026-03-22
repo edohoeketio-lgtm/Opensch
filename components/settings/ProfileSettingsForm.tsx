@@ -11,7 +11,7 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
   const [isHoveringAvatar, setIsHoveringAvatar] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatarUrl || null);
+  const [avatarPreview, setAvatarPreview] = useState<string>(profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent");
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -55,7 +55,7 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
         finalAvatarUrl = publicUrlData.publicUrl;
       } else if (avatarPreview?.includes("dicebear")) {
         // If they removed their avatar, we save the dummy url
-        finalAvatarUrl = null;
+        finalAvatarUrl = "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent";
       }
 
       const firstName = formData.get("firstName") as string;
@@ -105,7 +105,7 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
             onClick={() => fileInputRef.current?.click()}
           >
             <img 
-              src={avatarPreview || profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent"} 
+              src={avatarPreview || profile?.avatarUrl} 
               alt="Avatar" 
               className={`w-full h-full object-cover transition-opacity duration-300 ${isHoveringAvatar ? 'opacity-30' : 'opacity-90'}`} 
             />

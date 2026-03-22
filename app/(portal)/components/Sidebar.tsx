@@ -9,7 +9,7 @@ import Image from 'next/image';
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [profile, setProfile] = useState<{ fullName: string | null, avatarUrl: string | null, role: string } | null>(null);
+  const [profile, setProfile] = useState<{ fullName: string | null, avatarUrl: string, role: string } | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export function Sidebar() {
          <Link href="/settings" className={`block p-3 rounded-2xl bg-[#1C1C1E]/50 border border-[#2D2D2D] hover:bg-[#1C1C1E] transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
                <div className="w-10 h-10 rounded-full bg-[#111111] overflow-hidden relative border border-[#2D2D2D] shrink-0">
-                  <Image width={600} height={600} src={profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent"} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />
+                  {profile && <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />}
                </div>
                {!isCollapsed && (
                  <div className="flex flex-col whitespace-nowrap">

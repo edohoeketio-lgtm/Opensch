@@ -10,7 +10,7 @@ import Image from 'next/image';
 
 const createImage = (url: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
-    const image = new Image()
+    const image = new window.Image()
     image.addEventListener('load', () => resolve(image))
     image.addEventListener('error', (error) => reject(error))
     image.setAttribute('crossOrigin', 'anonymous')

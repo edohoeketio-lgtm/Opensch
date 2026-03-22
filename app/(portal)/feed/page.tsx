@@ -44,7 +44,8 @@ export default async function CampusFeedPage() {
     user: {
       name: 'OpenSch Administration',
       initial: 'OS',
-      role: 'SYSTEM'
+      role: 'SYSTEM',
+      avatar: "https://api.dicebear.com/7.x/notionists/svg?seed=OpenSch&backgroundColor=transparent"
     },
     time: b.createdAt.toLocaleDateString(),
     title: b.title,

@@ -14,7 +14,7 @@ export type UserType = {
   name: string;
   initial: string;
   role: string;
-  avatar?: string;
+  avatar: string;
 };
 
 export type FeedItemType = {
@@ -272,10 +272,8 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
             onClick={() => setIsComposing(true)}
           >
             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-[#2D2D2D] bg-[#1C1C1E] flex items-center justify-center">
-              {profile?.avatarUrl ? (
+              {profile && (
                 <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
-              ) : (
-                <span className="text-[#FFFFFF] font-bold text-sm">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
               )}
             </div>
             <span className="text-[#525252] text-[18px] sm:text-[20px]">What's on your mind?</span>
@@ -289,10 +287,8 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[#2D2D2D] bg-[#1C1C1E] flex items-center justify-center">
-                  {profile?.avatarUrl ? (
+                  {profile && (
                     <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
-                  ) : (
-                    <span className="text-[#FFFFFF] font-bold text-xs">{(profile?.fullName || 'S').charAt(0).toUpperCase()}</span>
                   )}
                 </div>
                 <span className="text-[#FFFFFF] font-medium text-[15px]">{profile?.fullName || 'Scholar'}</span>
@@ -487,14 +483,9 @@ export function ClientFeed({ initialItems }: ClientFeedProps) {
                    {/* Author Avatar */}
                    <div className="flex-shrink-0">
                      <div 
-                       className="w-10 h-10 rounded-full border border-[#2D2D2D] flex items-center justify-center overflow-hidden"
-                       style={{ backgroundColor: item.user.avatar ? 'transparent' : getAvatarColor(item.user.initial) }}
+                       className="w-10 h-10 rounded-full border border-[#2D2D2D] flex items-center justify-center overflow-hidden bg-transparent"
                      >
-                       {item.user.avatar ? (
-                         <Image width={600} height={600} src={item.user.avatar} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
-                       ) : (
-                         <span className="text-[#FFFFFF] font-bold text-sm">{item.user.initial}</span>
-                       )}
+                        <Image width={600} height={600} src={item.user.avatar} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
                      </div>
                    </div>
 

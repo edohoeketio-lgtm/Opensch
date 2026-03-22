@@ -25,7 +25,7 @@ export default function DashboardClient({
   studentId: string | null,
   milestone?: { title: string, subtitle: string },
   honor?: { title: string, subtitle: string },
-  recentActivity?: Array<{ id: string, authorName: string, authorAvatar?: string, authorInitial: string, title: string, timeLabel: string, type: string }>,
+  recentActivity?: Array<{ id: string, authorName: string, authorAvatar: string, authorInitial: string, title: string, timeLabel: string, type: string }>,
   upcomingAssignment?: { title: string, description: string, url: string, deadlineText: string } | null,
   upcomingEvent?: { title: string, description: string, url: string, timeText: string, timeLabel: string } | null,
   currentWeek?: number,
@@ -281,12 +281,8 @@ export default function DashboardClient({
             <div className="space-y-4 flex-1">
                {recentActivity.length > 0 ? recentActivity.map((activity) => (
                  <Link href={`/feed/${activity.id}`} key={activity.id} className="flex gap-4 p-4 rounded-xl border border-transparent hover:border-[#2D2D2D] hover:bg-[#1C1C1E] transition-colors cursor-pointer group">
-                    <div className="w-10 h-10 rounded-full bg-[#1D1D21] shrink-0 flex items-center justify-center overflow-hidden border border-[#2D2D2D]">
-                       {activity.authorAvatar ? (
-                         <Image width={600} height={600} src={activity.authorAvatar} alt={activity.authorName} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" />
-                       ) : (
-                         <span className="text-[#FFFFFF] text-sm font-bold">{activity.authorInitial}</span>
-                       )}
+                    <div className="w-10 h-10 rounded-full bg-[#1D1D21] shrink-0 overflow-hidden border border-[#2D2D2D]">
+                       <Image width={600} height={600} src={activity.authorAvatar} alt={activity.authorName} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" />
                     </div>
                     <div>
                        <div className="text-[13px] text-[#FFFFFF] leading-tight mb-1.5"><span className="font-medium">{activity.authorName}</span> posted in <span className="text-[#9CA3AF]">{activity.type}</span>: <span className="text-[#D1D5DB]">{activity.title !== 'Untitled Thought' ? activity.title : 'A new thought'}</span></div>
