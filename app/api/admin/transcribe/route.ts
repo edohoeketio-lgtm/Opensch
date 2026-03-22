@@ -125,9 +125,20 @@ export async function POST(req: Request) {
 
     console.log('Extracting and compressing audio via ffmpeg...');
     // Extract 32kbps mono audio
-    const ffmpegPath = path.join(process.cwd(), 'node_modules', 'ffmpeg-static', 'ffmpeg');
-    await execAsync(`"${ffmpegPath}" -i "${tempVideoPath}" -vn -acodec libmp3lame -ac 1 -ab 32k "${tempAudioPath}"`);
-    console.log('Audio compression complete.');
+    let ffmpegPath;
+    try {
+      ffmpegPath = require('ffmpeg-static');
+    } catch(e) { /* ignore */ }
+    
+    try {
+      if (!ffmpegPath) throw new Error("no ffmpeg");
+      await execAsync(`"${ffmpegPath}" -i "${tempVideoPath}" -vn -acodec libmp3lame -ac 1 -ab 32k "${tempAudioPath}"`);
+      console.log('Audio compression complete.');
+    } catch (ffmpegErr) {
+      console.log('FFMpeg failed or missing. Bypassing compression to send video raw to Whisper.', ffmpegErr);
+      // Fallback: copy video file to tempAudioPath to spoof the variable (Whisper accepts video files up to 25MB)
+      fs.copyFileSync(tempVideoPath, tempAudioPath);
+    }
 
     // Step 1: Extract Audio Transcript using OpenAI Whisper
     const audioStream = fs.createReadStream(tempAudioPath);
