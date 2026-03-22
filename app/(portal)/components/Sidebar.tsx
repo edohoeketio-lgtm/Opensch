@@ -83,26 +83,11 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout Navigation Action */}
-      <div className={`px-4 pb-2 mt-auto ${isCollapsed ? 'px-3' : ''}`}>
-        <button
-          onClick={() => {
-            import('@/app/actions/auth').then(m => m.logOut());
-          }}
-          className={`w-full flex items-center gap-3 py-2.5 rounded-xl transition-all duration-300 text-[#525252] hover:bg-red-500/10 hover:text-red-400 group border border-transparent hover:border-red-500/20 ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
-        >
-          <svg className="w-5 h-5 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          {!isCollapsed && <span className="font-medium text-sm tracking-wide whitespace-nowrap">Log Out</span>}
-        </button>
-      </div>
-
-      {/* Pinned User Profile Widget */}
-      <div className={`p-4 ${isCollapsed ? 'px-3' : ''}`}>
-         <Link href="/settings" className={`block p-4 rounded-2xl bg-transparent border border-[#2D2D2D] hover:bg-white/5 transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+      {/* Pinned User Profile & Logout Widget */}
+      <div className={`p-4 mt-auto space-y-2 ${isCollapsed ? 'px-3' : ''}`}>
+         <Link href="/settings" className={`block p-3 rounded-2xl bg-[#1C1C1E]/50 border border-[#2D2D2D] hover:bg-[#1C1C1E] transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
             <div className="flex items-center gap-3">
-               <div className="w-10 h-10 rounded-full bg-[#1C1C1E] overflow-hidden relative border border-[#2D2D2D] shrink-0">
+               <div className="w-10 h-10 rounded-full bg-[#111111] overflow-hidden relative border border-[#2D2D2D] shrink-0">
                   <Image width={600} height={600} src={profile?.avatarUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=Maurice&backgroundColor=transparent"} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-500" />
                </div>
                {!isCollapsed && (
@@ -119,6 +104,19 @@ export function Sidebar() {
             </div>
             {!isCollapsed && <ChevronRight className="w-4 h-4 text-[#888888] group-hover:text-[#B08D57] transition-colors shrink-0" />}
          </Link>
+
+         {/* Extracted Logout Button */}
+         <button
+           onClick={() => {
+             import('@/app/actions/auth').then(m => m.logOut());
+           }}
+           className={`w-full flex items-center justify-center gap-3 py-2 rounded-xl transition-all duration-300 text-[#525252] hover:bg-red-500/10 hover:text-red-400 group border border-transparent hover:border-red-500/20 ${isCollapsed ? 'px-0' : 'px-3'}`}
+         >
+           <svg className="w-4 h-4 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+             <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+           </svg>
+           {!isCollapsed && <span className="font-semibold text-xs tracking-wide whitespace-nowrap">Sign Out</span>}
+         </button>
       </div>
     </aside>
   );
