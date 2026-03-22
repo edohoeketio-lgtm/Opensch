@@ -198,7 +198,7 @@ export default function PortalLayout({
              </div>
              
              {/* Minimal Profile Escape Hatch */}
-             <Link href="/settings" className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1C1C1E] overflow-hidden relative cursor-pointer border border-[#2D2D2D] hover:border-[#2D2D2D] transition-all duration-300">
+             <Link href="/settings" className="hidden md:flex w-8 h-8 items-center justify-center rounded-full bg-[#1C1C1E] overflow-hidden relative cursor-pointer border border-[#2D2D2D] hover:border-[#2D2D2D] transition-all duration-300">
                 {profile?.avatarUrl ? (
                   <Image width={600} height={600} src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale opacity-90 transition-all duration-500 hover:grayscale-0 hover:opacity-100" />
                 ) : (
