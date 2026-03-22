@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Users, Mail, Loader2, Link2, Copy, CheckCircle2, TrendingUp, Inbox, CircleDot } from 'lucide-react';
 import { toast } from 'sonner';
+import { inviteInstructor } from '@/app/actions/admin';
 
 export interface UI_Instructor {
   id: string;
@@ -22,37 +23,31 @@ export default function InstructorsClient({ faculty }: { faculty: UI_Instructor[
   const [isInviting, setIsInviting] = useState(false);
   const [emailed, setEmailed] = useState(false);
 
+  const [isPending, startTransition] = useTransition();
+
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
-    setIsInviting(true);
     setEmailed(false);
 
-    try {
-      const res = await fetch('/api/admin/invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
+    startTransition(async () => {
+      try {
+        const res = await inviteInstructor(email);
 
-      const data = await res.json();
+        if (res.error) throw new Error(res.error);
 
-      if (!res.ok) throw new Error(data.error || 'Failed to invite instructor');
-
-      toast.success(data.message.includes('resent') ? 'Invite Resent!' : 'Instructor invited!', {
-        description: data.message
-      });
-      setEmailed(true);
-      setEmail('');
-      
-      // Reset emailed state after a few seconds
-      setTimeout(() => setEmailed(false), 5000);
-    } catch (error: any) {
-      toast.error('Invitation failed', { description: error.message });
-    } finally {
-      setIsInviting(false);
-    }
+        toast.success(res.message?.includes('resent') ? 'Invite Resent!' : 'Instructor invited!', {
+          description: res.message
+        });
+        setEmailed(true);
+        setEmail('');
+        
+        setTimeout(() => setEmailed(false), 5000);
+      } catch (error: any) {
+        toast.error('Invitation failed', { description: error.message });
+      }
+    });
   };
 
   return (
@@ -154,10 +149,10 @@ export default function InstructorsClient({ faculty }: { faculty: UI_Instructor[
                
                <button 
                  type="submit"
-                 disabled={isInviting || !email}
+                 disabled={isPending || !email}
                  className="w-full py-2.5 rounded-xl bg-[#FFFFFF] text-[#0B0B0C] text-[10px] font-semibold tracking-[0.2em] uppercase hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-white/10 flex items-center justify-center gap-2"
                >
-                 {isInviting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Generate Magic Link'}
+                 {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Generate Magic Link'}
                </button>
              </form>
 

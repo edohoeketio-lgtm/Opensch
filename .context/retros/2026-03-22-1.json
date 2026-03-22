@@ -1,0 +1,23 @@
+{
+  "date": "2026-03-22",
+  "window": "7d",
+  "metrics": {
+    "commits": 66,
+    "contributors": 1,
+    "insertions": 46233,
+    "deletions": 16557,
+    "net_loc": 29676,
+    "test_loc": 194,
+    "test_ratio": 0.004,
+    "active_days": 6,
+    "feat_pct": 0.30,
+    "fix_pct": 0.47,
+    "peak_hour": 14,
+    "ai_assisted_commits": 66
+  },
+  "authors": {
+    "Maurice Edohoeket": { "commits": 66, "insertions": 46233, "deletions": 16557, "test_ratio": 0.004, "top_area": "app/" }
+  },
+  "streak_days": 8,
+  "tweetable": "Week of Mar 15: 66 commits (1 contributor), 46k LOC added, 0.4% tests, peak: 2pm"
+}
