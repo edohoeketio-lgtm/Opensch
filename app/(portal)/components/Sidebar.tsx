@@ -83,6 +83,19 @@ export function Sidebar() {
         })}
       </nav>
 
+      {/* Admin Mode Toggle (Only visible if ADMIN) */}
+      {profile?.role === 'ADMIN' && (
+        <div className={`px-4 pb-2 ${isCollapsed ? 'px-3' : ''}`}>
+          <Link 
+            href="/admin" 
+            className={`flex items-center gap-3 py-2.5 rounded-xl transition-all duration-300 group bg-[#B08D57]/10 text-[#B08D57] hover:bg-[#B08D57]/20 border border-[#B08D57]/30 cursor-pointer shadow-[0_0_10px_rgba(176,141,87,0.1)] ${isCollapsed ? 'justify-center px-0' : 'px-3'}`}
+          >
+            <Briefcase className="w-5 h-5 shrink-0" />
+            {!isCollapsed && <span className="font-semibold text-xs tracking-[0.1em] uppercase whitespace-nowrap">Admin Mode</span>}
+          </Link>
+        </div>
+      )}
+
       {/* Pinned User Profile & Logout Widget */}
       <div className={`p-4 mt-auto space-y-2 ${isCollapsed ? 'px-3' : ''}`}>
          <Link href="/settings" className={`block p-3 rounded-2xl bg-[#1C1C1E]/50 border border-[#2D2D2D] hover:bg-[#1C1C1E] transition-colors duration-300 cursor-pointer group flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
