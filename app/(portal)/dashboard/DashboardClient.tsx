@@ -64,14 +64,14 @@ export default function DashboardClient({
       )}
 
       {/* Header */}
-      <header className="mb-10 flex flex-col items-start">
-        <div className="flex items-center gap-3 mb-1">
+      <header className="mb-12 flex flex-col items-start">
+        <div className="flex items-center gap-3 mb-6">
            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#B08D57]">Current Focus</span>
            <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-[#2D2D2D] text-[9px] font-semibold uppercase tracking-[0.15em] text-[#9CA3AF] flex items-center gap-1.5 shadow-sm"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></span> On Track</span>
         </div>
-        <h1 className="text-2xl md:text-[28px] font-semibold tracking-[-0.03em] text-[#FFFFFF] leading-tight mb-3">{greeting}!</h1>
-        <h2 className="text-lg md:text-[20px] font-medium tracking-tight text-[#D1D5DB] leading-tight mb-1.5">Week {activeWeekData.number} · {activeWeekData.title}.</h2>
-        <p className="text-[#D1D5DB] text-[13px] leading-relaxed max-w-2xl">{activeWeekData.goal}</p>
+        <h1 className="text-[32px] md:text-4xl font-semibold tracking-tight text-[#FFFFFF] leading-tight mb-4">{greeting}!</h1>
+        <h2 className="text-xl md:text-2xl font-medium tracking-tight text-white/90 leading-tight mb-3">Week {activeWeekData.number} · {activeWeekData.title}.</h2>
+        <p className="text-white/60 text-[14px] md:text-base leading-[1.7] max-w-3xl">{activeWeekData.goal}</p>
       </header>
 
       {/* Row 1: Apex Priority */}
