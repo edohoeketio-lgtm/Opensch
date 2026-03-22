@@ -82,7 +82,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       // 2. Calculate Milestone metrics directly from module progress
       const allModules = await prisma.module.findMany({
         where: { isPublished: true },
-        include: { lessons: { where: { isPublished: true }, select: { id: true } } }
+        include: { sections: { include: { lessons: { where: { isPublished: true }, select: { id: true } } } } }
       });
       
       const userProgress = await prisma.progressState.findMany({
@@ -95,7 +95,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       let masteredCount = 0;
       let latestMasteredTitle = "Getting Started";
       for (const mod of allModules) {
-        if (mod.lessons.length > 0 && mod.lessons.every(l => completedLessonIds.has(l.id))) {
+        const modLessons = mod.sections.flatMap((s: any) => s.lessons);
+        if (modLessons.length > 0 && modLessons.every((l: any) => completedLessonIds.has(l.id))) {
           masteredCount++;
           latestMasteredTitle = mod.title;
         }
@@ -143,7 +144,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     try {
       const nextAssignmentRaw = await prisma.assignment.findFirst({
          orderBy: { createdAt: 'asc' },
-         include: { lesson: { include: { module: { include: { course: true } } } } } as any,
+         include: { lesson: { include: { section: { include: { module: { include: { course: true } } } } } } } as any,
          where: {
            submissions: {
               none: { studentId: targetUserId as string, status: 'PASSED' }
@@ -153,11 +154,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       
       const nextAssignment = nextAssignmentRaw as any;
       if (nextAssignment && nextAssignment.lesson) {
-        const courseSlug = nextAssignment.lesson.module?.course?.slug;
+        const courseSlug = nextAssignment.lesson.section?.module?.course?.slug;
         upcomingAssignment = {
            title: nextAssignment.lesson.title + " Deliverable",
            description: `Submit your work for ${nextAssignment.lesson.title}.`,
-           url: `/course/${courseSlug}/module/${nextAssignment.lesson.module?.order || 1}/lesson/${nextAssignment.lesson.order || 1}`,
+           url: `/course/${courseSlug}/module/${nextAssignment.lesson.section?.moduleId}/lesson/${nextAssignment.lesson.id}`,
            deadlineText: "Next Up"
         };
       }
@@ -208,7 +209,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       include: {
         modules: {
           include: {
-            lessons: true
+            sections: {
+              include: { lessons: { orderBy: { order: 'asc' } } },
+              orderBy: { order: 'asc' }
+            }
           },
           orderBy: { order: 'asc' }
         }
@@ -234,9 +238,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       const startIndex = (currentCohortWeek - 1) * activeWeekLength;
       const weekDbModules = course.modules.slice(startIndex, startIndex + activeWeekLength);
 
-      progressMetrics.moduleProgress = weekDbModules.map(mod => {
-        const totalLessons = mod.lessons.length;
-        const completedLessons = mod.lessons.filter(l => progressStates.find(p => p.lessonId === l.id && p.isCompleted)).length;
+      progressMetrics.moduleProgress = weekDbModules.map((mod: any) => {
+        const modLessons = mod.sections.flatMap((s: any) => s.lessons);
+        const totalLessons = modLessons.length;
+        const completedLessons = modLessons.filter((l: any) => progressStates.find(p => p.lessonId === l.id && p.isCompleted)).length;
         totalActiveLessons += totalLessons;
         totalCompletedActiveLessons += completedLessons;
         return {
@@ -265,6 +270,46 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         totalLessons: mod.lessons.length // Static lessons array
      }));
   }
+  
+  let resumeUrl = `/course/ai-product-builder/module/${currentCohortWeek}/lesson/1`;
+  try {
+     const course = await prisma.course.findFirst({
+         include: {
+            modules: { include: { sections: { include: { lessons: { orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } } }, orderBy: { order: 'asc' } }
+         }
+     });
+     
+     if (course && targetUserId) {
+        const pStates = await prisma.progressState.findMany({ where: { userId: targetUserId }});
+        let foundResume = false;
+        const studentQuery = params.studentId ? `?studentId=${params.studentId}` : '';
+        for (const mod of course.modules) {
+           for (const sec of mod.sections) {
+              for (const less of sec.lessons) {
+              const state = pStates.find(p => p.lessonId === less.id);
+              if (!state || !state.isCompleted) {
+                 resumeUrl = `/course/${course.slug}/module/${mod.id}/lesson/${less.id}${studentQuery}`;
+                 foundResume = true;
+                 break;
+              }
+              }
+              if (foundResume) break;
+           }
+           if (foundResume) break;
+        }
+        
+        if (!foundResume && course.modules.length > 0) {
+           const lastMod = course.modules[course.modules.length - 1];
+           if (lastMod.sections.length > 0) {
+              const lastSec = lastMod.sections[lastMod.sections.length - 1];
+              if (lastSec.lessons.length > 0) {
+                 const lastLess = lastSec.lessons[lastSec.lessons.length - 1];
+                 resumeUrl = `/course/${course.slug}/module/${lastMod.id}/lesson/${lastLess.id}${studentQuery}`;
+              }
+           }
+        }
+     }
+  } catch(e) { console.error(e); }
 
   return (
     <DashboardClient 
@@ -278,6 +323,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       upcomingEvent={upcomingEvent}
       currentWeek={currentCohortWeek}
       progressMetrics={progressMetrics}
+      resumeUrl={resumeUrl}
     />
   );
 }

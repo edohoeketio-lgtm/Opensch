@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { updateRSVP } from "@/app/actions/events";
 type RSVPStatus = 'ATTENDING' | 'DECLINED';
@@ -12,19 +12,28 @@ interface CalendarClientProps {
 export default function CalendarClient({ initialEvents }: CalendarClientProps) {
   const [events, setEvents] = useState(initialEvents);
 
+  useEffect(() => {
+    setEvents(initialEvents);
+  }, [initialEvents]);
+
   const handleRSVP = async (eventId: string, status: RSVPStatus) => {
+    // 1. Snapshot the old state in case of failure
+    const oldEvents = events;
+    
+    // 2. Optimistically update the UI instantly (so the button snaps color!)
+    setEvents(prev => prev.map(ev => {
+      if (ev.id === eventId) {
+        return { ...ev, _optimisticStatus: status };
+      }
+      return ev;
+    }));
+
+    // 3. Perform the slow server action in the background
     try {
       await updateRSVP(eventId, status);
-      // Optimistically overwrite status inside array mapping (hack for fast UI)
-      setEvents(prev => prev.map(ev => {
-        if (ev.id === eventId) {
-          // A robust setup modifies the `ev.rsvps` array natively here 
-          // but for optimistic rendering, state gets rehydrated anyway
-          return { ...ev, _optimisticStatus: status };
-        }
-        return ev;
-      }));
     } catch (err: any) {
+      // 4. Revert if the server action failed
+      setEvents(oldEvents);
       alert("Failed to RSVP. Try again.");
     }
   };
@@ -94,7 +103,16 @@ export default function CalendarClient({ initialEvents }: CalendarClientProps) {
                          </div>
                          
                          {ev.link && (
-                           <a href={ev.link} target="_blank" rel="noreferrer" className="w-full text-center flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors">
+                           <a 
+                             href={ev.link} 
+                             target="_blank" 
+                             rel="noreferrer" 
+                             className={`w-full text-center flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                               currentStatus === 'DECLINED' 
+                                 ? 'bg-white/5 border border-white/10 text-white/50 hover:text-white/80 hover:bg-white/10' 
+                                 : 'bg-blue-600 hover:bg-blue-500 text-white'
+                             }`}
+                           >
                              <VideoIcon />
                              Join Video Call
                            </a>

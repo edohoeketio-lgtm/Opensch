@@ -196,7 +196,7 @@ export function ThreadReplies({ initialComments, threadId }: ThreadRepliesProps)
             value={globalReplyText}
             onChange={(e) => setGlobalReplyText(e.target.value)}
             placeholder="Add your reply to this thread..." 
-            className="w-full bg-transparent text-[#FFFFFF] placeholder:text-[#504C46] resize-none outline-none text-[15px] min-h-[80px]"
+            className="w-full bg-transparent text-[#FFFFFF] placeholder:text-[#504C46] resize-none outline-none focus:ring-0 focus:border-transparent border-transparent text-[15px] min-h-[80px]"
           />
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-1">

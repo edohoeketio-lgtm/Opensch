@@ -21,31 +21,21 @@ export default function LoginPage() {
     setErrorMsg(null)
     setLoading('email')
     
-    // TESTING BYPASS: Magic Links removed. We use a Universal Dummy Password to silently authenticate the session.
-    const dummyPassword = "OpenSchTest-2026-Bypass!"
-
-    // 1. Unconditionally attempt to create the account (it fails silently if they already exist)
-    await supabase.auth.signUp({
+    // PRODUCTION AUTHENTICATION: Send Magic Link via Supabase
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password: dummyPassword,
-    })
-
-    // 2. Unconditionally attempt to sign them into that account
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: dummyPassword,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+      },
     })
 
     if (error) {
-       console.error('Error logging in:', error)
-       if (error.message.includes("Invalid login credentials") || error.message.includes("Email not confirmed")) {
-           setErrorMsg("This email was previously registered. For this automated testing bypass, please type a brand new, unused email address.")
-       } else {
-           setErrorMsg(error.message)
-       }
+       console.error('Error sending magic link:', error)
+       setErrorMsg(error.message)
     } else {
-       // Success! The session cookie is set. Redirecting safely.
-       window.location.href = '/onboarding'
+       // Success! Inform the user to check their email.
+       setLoading('sent')
+       return
     }
     setLoading(null)
   }
@@ -103,9 +93,9 @@ export default function LoginPage() {
             <button 
               type="submit" 
               disabled={loading !== null}
-              className="w-full bg-white text-black font-medium flex justify-center items-center rounded-lg px-4 py-3 text-sm hover:bg-neutral-200 transition-colors shadow-lg shadow-white/5 disabled:opacity-50"
+              className={`w-full font-medium flex justify-center items-center rounded-lg px-4 py-3 text-sm transition-colors shadow-lg shadow-white/5 disabled:opacity-100 ${loading === 'sent' ? 'bg-green-500/10 text-green-400 border border-green-500/20 shadow-none pointer-events-none' : 'bg-white text-black hover:bg-neutral-200'}`}
             >
-              {loading === 'email' ? 'Sending Link...' : 'Continue with Email'}
+              {loading === 'email' ? 'Sending Link...' : loading === 'sent' ? '✨ Check your email for a magic link' : 'Continue with Email'}
             </button>
           </form>
 

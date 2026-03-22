@@ -41,7 +41,8 @@ export async function POST(req: Request) {
     }
 
     // Generate mock magic link (in a real app, this connects to Supabase Admin Auth)
-    const magicLink = `http://localhost:3000/api/auth/mock-magic-link?email=${encodeURIComponent(email)}&redirect=/onboarding/faculty`;
+    const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
+    const magicLink = `${siteUrl}/api/auth/mock-magic-link?email=${encodeURIComponent(email)}&redirect=/onboarding/faculty`;
 
     return NextResponse.json({ 
       success: true, 

@@ -9,15 +9,24 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { Readable } from 'stream';
+import { finished } from 'stream/promises';
 
 const execAsync = promisify(exec);
 
 // Rate limiter: 5 requests per 10 minutes (transcription is expensive)
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, '10 m'),
-  analytics: true,
-});
+let ratelimit: Ratelimit | null = null;
+try {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(5, '10 m'),
+      analytics: true,
+    });
+  }
+} catch (e) {
+  // Ignore
+}
 
 // Zod Schema for validation
 const TranscribeSchema = z.object({
@@ -44,24 +53,26 @@ export async function POST(req: Request) {
 
   try {
     // 1. Rate Limiting Check
-    const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1';
-    const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_transcribe_${ip}`);
-    
-    if (!success) {
-      return NextResponse.json({ error: 'Rate limit exceeded. Try again later.' }, {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': limit.toString(),
-          'X-RateLimit-Remaining': remaining.toString(),
-          'X-RateLimit-Reset': reset.toString()
-        }
-      });
+    if (ratelimit) {
+      const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1';
+      const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_transcribe_${ip}`);
+      
+      if (!success) {
+        return NextResponse.json({ error: 'Rate limit exceeded. Try again later.' }, {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
+          }
+        });
+      }
     }
 
-    // 2. Parse and Validate Form Data
-    const formData = await req.formData();
-    const file = formData.get('file');
-    const lessonIdRaw = formData.get('lessonId');
+    // 2. Parse Query Parameters Stream
+    const url = new URL(req.url);
+    const lessonIdRaw = url.searchParams.get('lessonId');
+    const fileName = url.searchParams.get('fileName') || 'upload.mp4';
 
     const validatedFields = TranscribeSchema.safeParse({
       lessonId: lessonIdRaw,
@@ -82,21 +93,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Lesson not found.' }, { status: 404 });
     }
 
-    if (!file || !(file instanceof Blob)) {
-      return NextResponse.json({ error: 'No valid video or audio file provided.' }, { status: 400 });
+    if (!req.body) {
+      return NextResponse.json({ error: 'No video stream provided.' }, { status: 400 });
     }
 
-    console.log(`Starting transcription for Lesson ${lessonId}, file: ${(file as File).name} (${file.size} bytes)`);
+    console.log(`Starting transcription for Lesson ${lessonId}, file: ${fileName}`);
 
     // --- AUDIO COMPRESSION PASS ---
     // OpenAI Whisper has a strict 25MB limit. We extract the audio locally to a tiny MP3 first.
     const tempVideoPath = path.join(os.tmpdir(), `upload-${Date.now()}.mp4`);
     const tempAudioPath = path.join(os.tmpdir(), `audio-${Date.now()}.mp3`);
     
-    // Save incoming file to tmp disk
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(tempVideoPath, buffer);
+    // Convert Web Fetch ReadableStream to Node WritableStream directly without memory buffering
+    const fileStream = fs.createWriteStream(tempVideoPath);
+    const readable = Readable.fromWeb(req.body as import('stream/web').ReadableStream);
+    
+    readable.pipe(fileStream);
+    await finished(fileStream);
 
     console.log('Extracting and compressing audio via ffmpeg...');
     // Extract 32kbps mono audio

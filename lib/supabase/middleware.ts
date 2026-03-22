@@ -47,6 +47,10 @@ export async function updateSession(request: NextRequest) {
   if (!user && isProtectedPath) {
     // DEV BYPASS: Allow quick UI testing locally without email verification
     if (process.env.NODE_ENV === 'development') {
+      if (!request.cookies.has('opensch_mock_email')) {
+        const uniqueEmail = `visitor_${Math.random().toString(36).substring(2, 9)}@opensch.com`;
+        supabaseResponse.cookies.set('opensch_mock_email', uniqueEmail, { path: '/', maxAge: 60 * 60 * 24 * 30 });
+      }
       return supabaseResponse
     }
     

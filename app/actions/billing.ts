@@ -23,6 +23,7 @@ export async function createPaystackSession(applicationId: string, amountKobo: n
 
   // Fallback to internal env locally or require production key
   const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || "sk_test_placeholder_key_for_dev";
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
 
   const response = await fetch("https://api.paystack.co/transaction/initialize", {
     method: "POST",
@@ -37,7 +38,7 @@ export async function createPaystackSession(applicationId: string, amountKobo: n
         application_id: application.id
       },
       // When paid, redirect them smoothly into the platform welcome setup
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/onboarding?source=paystack`
+      callback_url: `${siteUrl}/onboarding?source=paystack`
     })
   });
 

@@ -16,7 +16,8 @@ export default function DashboardClient({
   upcomingAssignment,
   upcomingEvent,
   currentWeek,
-  progressMetrics
+  progressMetrics,
+  resumeUrl
 }: { 
   studentName: string | null, 
   isImpersonating: boolean, 
@@ -32,7 +33,8 @@ export default function DashboardClient({
     timeSpentHrs: number, 
     points: number,
     moduleProgress: Array<{ title: string, completedLessons: number, totalLessons: number }> 
-  }
+  },
+  resumeUrl?: string
 }) {
   const firstName = extractFirstName(studentName);
   const greeting = useTimeGreeting(firstName);
@@ -75,7 +77,7 @@ export default function DashboardClient({
       <div className="flex flex-col xl:flex-row gap-8">
          {/* 60% Hero: Resume Learning */}         <section className="flex-1 xl:w-3/5 flex flex-col">
             <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#888888] mb-4">Continue Learning</h3>
-            <Link href={`/course/ai-product-builder/module/${activeWeekData.number}/lesson/1${isImpersonating && studentId ? '?studentId='+studentId : ''}`} className="group flex-1 flex flex-col rounded-2xl bg-[#1C1C1E] hover:bg-gradient-to-br hover:from-[#1A1A1E] hover:to-[#121214] border border-[#2D2D2D] overflow-hidden hover:border-[#2D2D2D] hover:shadow-2xl hover:shadow-black/80 transition-all duration-500 relative">
+            <Link href={resumeUrl || `/course/ai-product-builder/module/${activeWeekData.number}/lesson/1${isImpersonating && studentId ? '?studentId='+studentId : ''}`} className="group flex-1 flex flex-col rounded-2xl bg-[#1C1C1E] hover:bg-gradient-to-br hover:from-[#1A1A1E] hover:to-[#121214] border border-[#2D2D2D] overflow-hidden hover:border-[#2D2D2D] hover:shadow-2xl hover:shadow-black/80 transition-all duration-500 relative">
                {/* The Academic Horizon Line */}
                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-[#B08D57] to-transparent z-30 opacity-80"></div>
                
