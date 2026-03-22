@@ -76,12 +76,16 @@ export function ProfileSettingsForm({ profile }: { profile: any }) {
       };
 
       try {
-        await updateProfile(data);
+        const result = await updateProfile(data);
+        if (result?.error) {
+          toast.error(result.error);
+          return;
+        }
         window.dispatchEvent(new Event('profileUpdated'));
         toast.success("Profile updated successfully!");
         router.refresh();
       } catch (e: any) {
-        toast.error(e.message);
+        toast.error("Failed to connect to the server.");
       }
     });
   }

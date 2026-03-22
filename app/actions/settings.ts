@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { Prisma } from "@prisma/client";
 
 export async function updateProfile(data: {
   fullName?: string;
@@ -17,19 +18,37 @@ export async function updateProfile(data: {
   const user = await getAuthenticatedUser();
   if (!user) throw new Error("Unauthorized");
 
-  const profile = await prisma.profile.upsert({
-    where: { userId: user.id },
-    update: data,
-    create: {
-      userId: user.id,
-      ...data,
-    },
-  });
+  // Sanitize empty strings so they don't trigger unique constraint violations for empty values
+  const sanitizedData = {
+    ...data,
+    username: data.username === "" ? null : data.username,
+    githubHandle: data.githubHandle === "" ? null : data.githubHandle,
+    linkedinUrl: data.linkedinUrl === "" ? null : data.linkedinUrl,
+  };
 
-  revalidatePath('/settings');
-  revalidatePath('/admin/settings');
-  revalidatePath('/', 'layout');
-  return { success: true, profile };
+  try {
+    const profile = await prisma.profile.upsert({
+      where: { userId: user.id },
+      update: sanitizedData,
+      create: {
+        userId: user.id,
+        ...sanitizedData,
+      },
+    });
+
+    revalidatePath('/settings');
+    revalidatePath('/admin/settings');
+    revalidatePath('/', 'layout');
+    return { success: true, profile };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return { error: "This username is already taken. Please choose another one." };
+      }
+    }
+    console.error("Profile update error:", error);
+    return { error: "An unexpected error occurred while saving your profile." };
+  }
 }
 
 export async function updateNotificationPreferences(preferences: Record<string, boolean>) {
