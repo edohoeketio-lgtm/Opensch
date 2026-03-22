@@ -17,6 +17,14 @@ const nextConfig = {
         hostname: '**',
       }
     ]
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['@ffmpeg-installer/ffmpeg'],
+    outputFileTracingIncludes: {
+      '/api/admin/transcribe': [
+        './node_modules/@ffmpeg-installer/**/*'
+      ]
+    }
   }
 };
 
