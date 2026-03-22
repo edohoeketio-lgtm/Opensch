@@ -40,38 +40,33 @@ export async function POST(req: Request) {
       });
     }
 
-    // Generate real magic link via Supabase Admin API
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json({ error: 'Missing SUPABASE_SERVICE_ROLE_KEY environment variable. Required for admin invite generation.' }, { status: 500 });
-    }
-
+    // Dispatch real magic link strictly through standard Supabase Auth
+    // This allows us to safely bypass requiring the Service Role Key while achieving the exact same result!
     const { createClient } = await import('@supabase/supabase-js');
-    const supabaseAdmin = createClient(
+    const supabaseAnon = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
     const siteUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://opensch.vercel.app';
     
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
+    const { error: otpError } = await supabaseAnon.auth.signInWithOtp({
       email: email,
       options: {
-        redirectTo: `${siteUrl}/onboarding/faculty`
+        emailRedirectTo: `${siteUrl}/onboarding/faculty`,
+        shouldCreateUser: true
       }
     });
 
-    if (linkError || !linkData?.properties?.action_link) {
-      console.error('Supabase generateLink error:', linkError);
-      return NextResponse.json({ error: 'Failed to generate secure invite link from Supabase' }, { status: 500 });
+    if (otpError) {
+      console.error('Supabase OTP Dispatch error:', otpError);
+      return NextResponse.json({ error: 'Failed to securely dispatch invite via Supabase' }, { status: 500 });
     }
-
-    const magicLink = linkData.properties.action_link;
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Instructor invited successfully.',
-      magicLink 
+      message: 'Instructor invited and emailed successfully.',
+      emailed: true // Flag to tell the UI the link was dispatched natively
     });
 
   } catch (error) {

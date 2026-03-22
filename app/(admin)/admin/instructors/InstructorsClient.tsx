@@ -20,15 +20,14 @@ export interface UI_Instructor {
 export default function InstructorsClient({ faculty }: { faculty: UI_Instructor[] }) {
   const [email, setEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
-  const [magicLink, setMagicLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [emailed, setEmailed] = useState(false);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setIsInviting(true);
-    setMagicLink(null);
+    setEmailed(false);
 
     try {
       const res = await fetch('/api/admin/invite', {
@@ -42,23 +41,18 @@ export default function InstructorsClient({ faculty }: { faculty: UI_Instructor[
       if (!res.ok) throw new Error(data.error || 'Failed to invite instructor');
 
       toast.success('Instructor invited!', {
-        description: 'Magic link generated successfully.'
+        description: 'Secure invite link dispatched to email.'
       });
-      setMagicLink(data.magicLink);
+      setEmailed(true);
       setEmail('');
+      
+      // Reset emailed state after a few seconds
+      setTimeout(() => setEmailed(false), 5000);
     } catch (error: any) {
       toast.error('Invitation failed', { description: error.message });
     } finally {
       setIsInviting(false);
     }
-  };
-
-  const copyToClipboard = () => {
-    if (!magicLink) return;
-    navigator.clipboard.writeText(magicLink);
-    setCopied(true);
-    toast.success('Link copied to clipboard');
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -168,27 +162,17 @@ export default function InstructorsClient({ faculty }: { faculty: UI_Instructor[
              </form>
 
              {/* Result Panel */}
-             {magicLink && (
+             {emailed && (
                <div className="pt-4 border-t border-admin-border space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                 <div className="flex items-center gap-2 text-emerald-400">
-                   <CheckCircle2 className="w-4 h-4" />
-                   <span className="text-[12px] font-medium">Invitation Ready</span>
-                 </div>
-                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl break-all">
-                   <p className="text-[11px] text-emerald-400 font-mono leading-relaxed select-all">
-                     {magicLink}
+                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex flex-col items-center justify-center text-center space-y-2">
+                   <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mb-1">
+                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                   </div>
+                   <span className="text-[13px] font-semibold text-emerald-400">Secure Dispatch Successful</span>
+                   <p className="text-[11px] text-emerald-400/80 leading-relaxed max-w-[200px]">
+                     The faculty member will receive an authenticated Magic Link directly from Supabase to complete their profile setup.
                    </p>
                  </div>
-                 <button 
-                   onClick={copyToClipboard}
-                   className="w-full py-2 rounded-lg bg-ink border border-admin-border text-admin-muted text-[10px] uppercase font-semibold tracking-wider hover:text-white hover:bg-admin-surface-hover transition-all flex items-center justify-center gap-2"
-                 >
-                   {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                   {copied ? 'Copied' : 'Copy Link'}
-                 </button>
-                 <a href={magicLink} className="block text-center mt-2 text-[10px] font-bold text-accent hover:underline uppercase tracking-wider">
-                   Test Link Now &rarr;
-                 </a>
                </div>
              )}
           </div>
