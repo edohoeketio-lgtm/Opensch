@@ -67,7 +67,7 @@ export function StudentQuizGateway({ lessonId, quizData, onSeek, onPassed, isOpe
       if (!isReadOnly) {
         try {
           await markLessonComplete(lessonId);
-          toast.success("Session mastery verified. Next tier unlocked.", { icon: "🔥", duration: 4000 });
+          toast.success("Session mastery verified. Next tier unlocked.", { duration: 4000 });
           setState('PASSED');
         } catch (e) {
           toast.error("Error saving progress.");
@@ -100,7 +100,7 @@ export function StudentQuizGateway({ lessonId, quizData, onSeek, onPassed, isOpe
   };
 
   // If no quiz data, don't render anything interceptive
-  if (!quizData || quizData.length === 0) return null;
+  if (!quizData || quizData.length === 0 || !isOpen) return null;
 
 
   return (
