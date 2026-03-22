@@ -1,12 +1,19 @@
 import { getApplications } from "@/app/actions/admissions";
 import AdmissionsClient from "./AdmissionsClient";
 import prisma from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Admissions Pipeline | OpenSch Admin",
 };
 
 export default async function AdmissionsPage() {
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== 'ADMIN') {
+    redirect('/dashboard');
+  }
+
   const applications = await getApplications();
   const cohorts = await prisma.cohort.findMany({
     orderBy: { startDate: 'desc' }

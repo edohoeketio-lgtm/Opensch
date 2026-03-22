@@ -20,7 +20,7 @@ import {
   Wallet
 } from "lucide-react";
 
-export function AdminSidebar() {
+export function AdminSidebar({ userRole }: { userRole: string }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
 
@@ -28,15 +28,15 @@ export function AdminSidebar() {
     { name: "Cohort Builder", href: "/admin/curriculum", icon: GraduationCap },
     { name: "Review Queue", href: "/admin/reviews", icon: MessageSquare },
     { name: "Student Roster", href: "/admin/roster", icon: Users },
-    { name: "Admissions Pipeline", href: "/admin/admissions", icon: ClipboardList },
+    { name: "Admissions Pipeline", href: "/admin/admissions", icon: ClipboardList, adminOnly: true },
     { name: "Live Ops HQ", href: "/admin/live-ops", icon: Calendar },
-    { name: "Cohort Revenue", href: "/admin/revenue", icon: Wallet },
-    { name: "Broadcasts", href: "/admin/broadcasts", icon: Bell },
-    { name: "Faculty Invites", href: "/admin/instructors", icon: Mail },
+    { name: "Cohort Revenue", href: "/admin/revenue", icon: Wallet, adminOnly: true },
+    { name: "Broadcasts", href: "/admin/broadcasts", icon: Bell, adminOnly: true },
+    { name: "Faculty Invites", href: "/admin/instructors", icon: Mail, adminOnly: true },
     { name: "Resources", href: "/admin/resources", icon: Video },
-    { name: "Analytics", href: "/admin/analytics", icon: BarChart },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart, adminOnly: true },
     { name: "Settings", href: "/admin/settings", icon: Settings },
-  ];
+  ].filter(item => userRole === 'ADMIN' || !item.adminOnly);
 
   return (
     <aside className={`border-r border-admin-border hidden md:flex flex-col bg-ink transition-all duration-300 relative ${isCollapsed ? 'w-[88px]' : 'w-72'}`}>

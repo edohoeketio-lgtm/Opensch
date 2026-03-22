@@ -1,4 +1,4 @@
-import prisma from './lib/prisma';
+import prisma from '../../lib/prisma';
 async function run() {
   await prisma.lesson.updateMany({
     where: { title: { contains: "720p" } },

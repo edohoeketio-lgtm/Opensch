@@ -1,9 +1,13 @@
 import prisma from '@/lib/prisma';
 import InstructorsClient, { UI_Instructor } from './InstructorsClient';
 import { getAuthenticatedUser } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 
 export default async function FacultyManagementPage() {
   const user = await getAuthenticatedUser();
+  if (!user || user.role !== 'ADMIN') {
+    redirect('/dashboard');
+  }
   const canInvite = user?.role === 'ADMIN';
   const facultyRecords = await prisma.user.findMany({
     where: {

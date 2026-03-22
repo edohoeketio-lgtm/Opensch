@@ -26,7 +26,7 @@ export default async function AdminLayout({
     <ToastProvider>
       <div className="flex bg-ink text-surface h-screen overflow-hidden font-sans selection:bg-white/30">
         
-        <AdminSidebar />
+        <AdminSidebar userRole={user?.role || 'STUDENT'} />
 
         {/* Main Container */}
         <div className="flex-1 flex flex-col min-w-0 bg-ink">
@@ -34,7 +34,7 @@ export default async function AdminLayout({
           {/* Top Utility Bar (Admin specific tint) */}
           <header className="h-16 border-b border-admin-border flex items-center justify-between px-4 md:px-8 shrink-0 bg-ink/80 backdrop-blur-md z-10 sticky top-0">
             <div className="flex items-center gap-3">
-              <MobileAdminDrawer />
+              <MobileAdminDrawer userRole={user?.role || 'STUDENT'} />
               <span className="hidden md:inline-block px-2 py-1 rounded bg-admin-surface border border-admin-border text-[10px] font-bold tracking-[0.2em] uppercase text-accent">ADMIN MODE</span>
               <span className="text-sm font-medium text-surface hidden sm:inline-block">Command Center Active</span>
             </div>

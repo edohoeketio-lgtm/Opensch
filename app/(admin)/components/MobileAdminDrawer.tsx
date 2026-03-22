@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation';
 import { 
   Menu, X, Users, Video, Settings, 
   MessageSquare, BarChart, Bell, GraduationCap, 
-  Mail, ClipboardList, Calendar, LogOut
+  Mail, ClipboardList, Calendar, LogOut, Wallet
 } from "lucide-react";
 
-export function MobileAdminDrawer() {
+export function MobileAdminDrawer({ userRole }: { userRole: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -17,13 +17,14 @@ export function MobileAdminDrawer() {
     { name: "Cohort Builder", href: "/admin/curriculum", icon: GraduationCap },
     { name: "Review Queue", href: "/admin/reviews", icon: MessageSquare },
     { name: "Student Roster", href: "/admin/roster", icon: Users },
-    { name: "Admissions Pipeline", href: "/admin/admissions", icon: ClipboardList },
+    { name: "Admissions Pipeline", href: "/admin/admissions", icon: ClipboardList, adminOnly: true },
     { name: "Live Ops HQ", href: "/admin/live-ops", icon: Calendar },
-    { name: "Broadcasts", href: "/admin/broadcasts", icon: Bell },
-    { name: "Faculty Invites", href: "/admin/instructors", icon: Mail },
-    { name: "Analytics", href: "/admin/analytics", icon: BarChart },
+    { name: "Cohort Revenue", href: "/admin/revenue", icon: Wallet, adminOnly: true },
+    { name: "Broadcasts", href: "/admin/broadcasts", icon: Bell, adminOnly: true },
+    { name: "Faculty Invites", href: "/admin/instructors", icon: Mail, adminOnly: true },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart, adminOnly: true },
     { name: "Settings", href: "/admin/settings", icon: Settings },
-  ];
+  ].filter(item => userRole === 'ADMIN' || !(item as any).adminOnly);
 
   return (
     <>
