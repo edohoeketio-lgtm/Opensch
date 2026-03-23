@@ -221,9 +221,9 @@ export default async function AdminCommandCenter() {
                 </div>
              </div>
              
-             <button className="w-full mt-8 py-2.5 rounded-xl border border-admin-border bg-ink text-[10px] font-semibold text-admin-muted hover:text-surface hover:bg-admin-surface-hover transition-all uppercase tracking-[0.2em]">
+             <Link href="/admin/reviews" className="w-full mt-8 py-2.5 rounded-xl border border-admin-border bg-ink text-[10px] font-semibold text-admin-muted hover:text-surface hover:bg-admin-surface-hover transition-all uppercase tracking-[0.2em] text-center block">
                Open Review Queue
-             </button>
+             </Link>
           </div>
         </div>
 

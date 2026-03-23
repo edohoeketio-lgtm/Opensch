@@ -135,7 +135,7 @@ export default async function CampusFeedPage() {
                 
                 <div className="pt-4 border-t border-[#2D2D2D]">
                    <span className="text-[11px] font-bold text-[#888888] uppercase tracking-wider mb-2 block">Key Deliverables</span>
-                   <ul className="space-y-2">
+                   <ul className="space-y-2 mb-5">
                      <li className="flex items-start gap-2 text-xs text-[#A6A197]">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#B08D57] mt-1.5 shrink-0"></span>
                         OAuth Integration via Supabase
@@ -145,6 +145,9 @@ export default async function CampusFeedPage() {
                         Relational Database Schema Design
                      </li>
                    </ul>
+                   <Link href="/curriculum" className="flex items-center justify-center w-full py-3 rounded-xl bg-[#F5F2EB] hover:bg-white text-[#050505] text-[11px] font-bold uppercase tracking-[0.1em] transition-all shadow-[0_0_15px_rgba(245,242,235,0.15)] gap-2">
+                      Resume Learning <ArrowUpRight className="w-4 h-4" />
+                   </Link>
                 </div>
               </div>
             </div>
