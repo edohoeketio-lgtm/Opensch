@@ -17,7 +17,8 @@ import {
   ChevronRight, 
   ChevronLeft, 
   LogOut,
-  Wallet
+  Wallet,
+  LayoutDashboard
 } from "lucide-react";
 
 export function AdminSidebar({ userRole }: { userRole: string }) {
@@ -25,6 +26,7 @@ export function AdminSidebar({ userRole }: { userRole: string }) {
   const pathname = usePathname();
 
   const navItems = [
+    { name: "Overview", href: "/admin", icon: LayoutDashboard },
     { name: "Cohort Builder", href: "/admin/curriculum", icon: GraduationCap },
     { name: "Review Queue", href: "/admin/reviews", icon: MessageSquare },
     { name: "Student Roster", href: "/admin/roster", icon: Users },

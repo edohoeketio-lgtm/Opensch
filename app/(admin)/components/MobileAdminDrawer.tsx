@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { 
   Menu, X, Users, Video, Settings, 
   MessageSquare, BarChart, Bell, GraduationCap, 
-  Mail, ClipboardList, Calendar, LogOut, Wallet
+  Mail, ClipboardList, Calendar, LogOut, Wallet, LayoutDashboard
 } from "lucide-react";
 
 export function MobileAdminDrawer({ userRole }: { userRole: string }) {
@@ -14,6 +14,7 @@ export function MobileAdminDrawer({ userRole }: { userRole: string }) {
   const pathname = usePathname();
 
   const navItems = [
+    { name: "Overview", href: "/admin", icon: LayoutDashboard },
     { name: "Cohort Builder", href: "/admin/curriculum", icon: GraduationCap },
     { name: "Review Queue", href: "/admin/reviews", icon: MessageSquare },
     { name: "Student Roster", href: "/admin/roster", icon: Users },
